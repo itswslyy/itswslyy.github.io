@@ -11,7 +11,7 @@ except Exception:  # Windows without tzdata (local testing only) - GitHub's Linu
     TZ = datetime.datetime.now().astimezone().tzinfo
 G = "https://graph.facebook.com/v23.0/"
 SLOTS = {"reel": (0, 6, 12, 18), "feed": (3, 9, 15, 21)}
-EARLY, LATE = 10, 55  # GitHub's hourly timer can run a little early or up to ~50 min late
+EARLY, LATE = 5, 180  # GitHub's timer is often late or skipped, so a missed slot is still posted up to 3h late
 DRY = os.environ.get("DRY_RUN") == "1"
 TOKEN = os.environ.get("IG_TOKEN", "")
 cfg = json.load(open("config.json", encoding="utf-8"))
@@ -110,6 +110,7 @@ def main():
     lib = json.load(open("library.json", encoding="utf-8"))
     now = datetime.datetime.now(TZ)
     done = set(state.setdefault("slots_done", []))
+    n_before = len(done)
     for kind, hours in SLOTS.items():
         for day in (now.date() - datetime.timedelta(days=1), now.date(), now.date() + datetime.timedelta(days=1)):
             for h in hours:
@@ -141,9 +142,9 @@ def main():
                     print("  FAILED", e)
                 state.setdefault("history", []).insert(0, rec)
                 state["history"] = state["history"][:300]
-    state["last_run"] = now.isoformat(timespec="minutes")
-    if not DRY:
-        json.dump(state, open("state.json", "w", encoding="utf-8"), indent=1)
+    if not DRY and len(done) > n_before:
+        state["last_run"] = now.isoformat(timespec="minutes")
+        json.dump(state, open("state.json", "w", encoding="utf-8"), indent=1)  # only saved when something posted
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 name: Instagram Autopilot
 on:
   schedule:
-    - cron: "52 * * * *"   # every hour, just before each slot (GitHub may start it a few minutes late)
+    - cron: "*/10 * * * *"   # every 10 min: GitHub often starts scheduled runs late or skips them
   workflow_dispatch:
     inputs:
       dry_run:
