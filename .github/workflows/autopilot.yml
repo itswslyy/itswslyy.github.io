@@ -1,0 +1,35 @@
+name: Instagram Autopilot
+on:
+  schedule:
+    - cron: "52 * * * *"   # every hour, just before each slot (GitHub may start it a few minutes late)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (show what would post, don't post)"
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: autopilot
+  cancel-in-progress: false
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Post anything that's due
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: python autopilot.py
+      - name: Save progress
+        run: |
+          git config user.name "autopilot-bot"
+          git config user.email "autopilot-bot@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || (git commit -m "Autopilot progress" && git push)
