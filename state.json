@@ -2,7 +2,7 @@
  "on": true,
  "ptr": {
   "feed": {
-   "main": 1,
+   "main": 2,
    "dec": 0,
    "dec_year": null
   },
@@ -14,16 +14,28 @@
  },
  "posted_ids": [
   "18095435396187101",
-  "18124650514937633"
+  "18124650514937633",
+  "18122411062905235"
  ],
  "map": {
-  "18124650514937633": "18227587702137243"
+  "18124650514937633": "18227587702137243",
+  "18122411062905235": "17951310029482663"
  },
  "slots_done": [
   "2026-11-04 09:00 feed",
-  "2026-11-04 12:00 reel"
+  "2026-11-04 12:00 reel",
+  "2026-11-04 15:00 feed"
  ],
  "history": [
+  {
+   "slot": "2026-11-04 15:00 feed",
+   "kind": "feed",
+   "orig": "2022-11-03",
+   "src": "17951310029482663",
+   "cloud": true,
+   "status": "posted",
+   "url": "https://www.instagram.com/p/DfUxRavDcBM/"
+  },
   {
    "slot": "2026-11-04 12:00 reel",
    "kind": "reel",
@@ -47,5 +59,5 @@
   "feed": "follow (@wslyyofficial) for more relatable content"
  },
  "first_comment": "Full videos on my YouTube \ud83d\udc49 link in bio \ud83c\udfac",
- "last_run": "2026-11-04T12:20+00:00"
+ "last_run": "2026-11-04T15:23+00:00"
 }
