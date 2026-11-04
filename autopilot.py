@@ -47,6 +47,16 @@ def wait(cid):
     raise ValueError("Instagram took too long to process it")
 
 
+def upload_video(url, **params):
+    """Instagram often can't fetch its own video links, so download the video and upload the file directly."""
+    with urllib.request.urlopen(url, timeout=300) as r:
+        data = r.read()
+    cid = post(IG + "/media", upload_type="resumable", **params)["id"]
+    _open(urllib.request.Request(f"https://rupload.facebook.com/ig-api-upload/v23.0/{cid}", data=data, method="POST",
+                                 headers={"Authorization": "OAuth " + TOKEN, "offset": "0", "file_size": str(len(data))}))
+    return cid
+
+
 def smart_order(main, state):
     views = {}
     for new_id, src in state.get("map", {}).items():
@@ -84,17 +94,12 @@ def pick(kind, now, state, lib):
 def publish(item, caption):
     fresh = get(item["id"], fields="media_type,media_url,children{media_type,media_url}")
     if item["kind"] == "reel":
-        # Instagram often can't fetch its own video links, so download the video and upload the file directly
-        with urllib.request.urlopen(fresh["media_url"], timeout=300) as r:
-            data = r.read()
-        cid = post(IG + "/media", media_type="REELS", upload_type="resumable", caption=caption, share_to_feed="true")["id"]
-        _open(urllib.request.Request(f"https://rupload.facebook.com/ig-api-upload/v23.0/{cid}", data=data, method="POST",
-                                     headers={"Authorization": "OAuth " + TOKEN, "offset": "0", "file_size": str(len(data))}))
+        cid = upload_video(fresh["media_url"], media_type="REELS", caption=caption, share_to_feed="true")
     elif fresh.get("media_type") == "CAROUSEL_ALBUM":
         kids = []
         for ch in fresh.get("children", {}).get("data", []):
             if ch.get("media_type") == "VIDEO":
-                k = post(IG + "/media", is_carousel_item="true", media_type="VIDEO", video_url=ch["media_url"])["id"]
+                k = upload_video(ch["media_url"], is_carousel_item="true", media_type="VIDEO")
             else:
                 k = post(IG + "/media", is_carousel_item="true", image_url=ch["media_url"])["id"]
             wait(k)
