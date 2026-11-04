@@ -11,7 +11,7 @@ except Exception:  # Windows without tzdata (local testing only) - GitHub's Linu
     TZ = datetime.datetime.now().astimezone().tzinfo
 G = "https://graph.facebook.com/v23.0/"
 SLOTS = {"reel": (0, 6, 12, 18), "feed": (3, 9, 15, 21)}
-EARLY, LATE = 5, 180  # GitHub's timer is often late or skipped, so a missed slot is still posted up to 3h late
+EARLY, LATE = 45, 180  # GitHub runs roughly hourly at random minutes: an early run waits for the slot, a missed slot is posted up to 3h late
 DRY = os.environ.get("DRY_RUN") == "1"
 TOKEN = os.environ.get("IG_TOKEN", "")
 cfg = json.load(open("config.json", encoding="utf-8"))
@@ -128,6 +128,9 @@ def main():
                 key = f"{slot:%Y-%m-%d %H}:00 {kind}"
                 if key in done or not (slot - datetime.timedelta(minutes=EARLY) <= now <= slot + datetime.timedelta(minutes=LATE)):
                     continue
+                if now < slot and not DRY:
+                    print(f"Waiting {int((slot - now).total_seconds() // 60)} min for the {slot:%H:%M} slot")
+                    time.sleep((slot - now).total_seconds())
                 item = pick(kind, now, state, lib)
                 state["slots_done"] = (state["slots_done"] + [key])[-200:]
                 done.add(key)
