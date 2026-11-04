@@ -7,7 +7,7 @@
    "dec_year": null
   },
   "reel": {
-   "main": 1,
+   "main": 0,
    "dec": 0,
    "dec_year": null
   }
@@ -17,19 +17,9 @@
  ],
  "map": {},
  "slots_done": [
-  "2026-11-04 09:00 feed",
-  "2026-11-04 12:00 reel"
+  "2026-11-04 09:00 feed"
  ],
  "history": [
-  {
-   "slot": "2026-11-04 12:00 reel",
-   "kind": "reel",
-   "orig": "2022-04-18",
-   "src": "18227587702137243",
-   "cloud": true,
-   "status": "failed",
-   "error": "Instagram couldn't process it: Error: Media upload has failed with error code 2207076"
-  },
   {
    "slot": "2026-11-04 09:00 feed",
    "kind": "feed",

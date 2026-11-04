@@ -37,7 +37,7 @@ def post(path, **params):
 
 
 def wait(cid):
-    for _ in range(60):
+    for _ in range(90):  # up to 15 min
         s = get(cid, fields="status_code,status")
         if s.get("status_code") == "FINISHED":
             return
@@ -84,7 +84,12 @@ def pick(kind, now, state, lib):
 def publish(item, caption):
     fresh = get(item["id"], fields="media_type,media_url,children{media_type,media_url}")
     if item["kind"] == "reel":
-        cid = post(IG + "/media", media_type="REELS", video_url=fresh["media_url"], caption=caption, share_to_feed="true")["id"]
+        # Instagram often can't fetch its own video links, so download the video and upload the file directly
+        with urllib.request.urlopen(fresh["media_url"], timeout=300) as r:
+            data = r.read()
+        cid = post(IG + "/media", media_type="REELS", upload_type="resumable", caption=caption, share_to_feed="true")["id"]
+        _open(urllib.request.Request(f"https://rupload.facebook.com/ig-api-upload/v23.0/{cid}", data=data, method="POST",
+                                     headers={"Authorization": "OAuth " + TOKEN, "offset": "0", "file_size": str(len(data))}))
     elif fresh.get("media_type") == "CAROUSEL_ALBUM":
         kids = []
         for ch in fresh.get("children", {}).get("data", []):
