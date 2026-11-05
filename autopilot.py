@@ -91,8 +91,14 @@ def pick(kind, now, state, lib):
     return item
 
 
+class NoMedia(Exception):
+    pass
+
+
 def publish(item, caption):
     fresh = get(item["id"], fields="media_type,media_url,children{media_type,media_url}")
+    if "media_url" not in fresh and fresh.get("media_type") != "CAROUSEL_ALBUM":
+        raise NoMedia("Instagram won't give out this post's file (usually copyrighted music), skipped")
     if item["kind"] == "reel":
         cid = upload_video(fresh["media_url"], media_type="REELS", caption=caption, share_to_feed="true")
     elif fresh.get("media_type") == "CAROUSEL_ALBUM":
@@ -131,16 +137,28 @@ def main():
                 if now < slot and not DRY:
                     print(f"Waiting {int((slot - now).total_seconds() // 60)} min for the {slot:%H:%M} slot")
                     time.sleep((slot - now).total_seconds())
-                item = pick(kind, now, state, lib)
                 state["slots_done"] = (state["slots_done"] + [key])[-200:]
                 done.add(key)
                 caption = state.get("captions", {}).get(kind, "")
-                print(f"{key}: {kind} originally from {item['ts'][:10]} ({item['id']})")
-                if DRY:
-                    continue
-                rec = {"slot": key, "kind": kind, "orig": item["ts"][:10], "src": item["id"], "cloud": True}
-                try:
-                    new_id, url = publish(item, caption)
+                bad = state.setdefault("unusable", [])
+                for attempt in range(3):  # if a post can't be reposted, use the next one so the slot isn't empty
+                    item = pick(kind, now, state, lib)
+                    while item["id"] in bad:
+                        item = pick(kind, now, state, lib)
+                    print(f"{key}: {kind} originally from {item['ts'][:10]} ({item['id']})")
+                    if DRY:
+                        break
+                    rec = {"slot": key, "kind": kind, "orig": item["ts"][:10], "src": item["id"], "cloud": True}
+                    try:
+                        new_id, url = publish(item, caption)
+                    except Exception as e:
+                        if isinstance(e, NoMedia):
+                            bad.append(item["id"])  # Instagram won't hand out this file (usually copyrighted music) - skip it for good
+                        rec.update(status="failed", error=str(e)[:200])
+                        print("  FAILED", e)
+                        state.setdefault("history", []).insert(0, rec)
+                        rec = None
+                        continue
                     rec.update(status="posted", url=url)
                     state.setdefault("posted_ids", []).append(new_id)
                     state.setdefault("map", {})[new_id] = item["id"]
@@ -150,9 +168,9 @@ def main():
                         except Exception as e:
                             rec["error"] = "first comment failed: " + str(e)[:120]
                     print("  posted", url)
-                except Exception as e:
-                    rec.update(status="failed", error=str(e)[:200])
-                    print("  FAILED", e)
+                    break
+                if DRY or rec is None:
+                    continue
                 state.setdefault("history", []).insert(0, rec)
                 state["history"] = state["history"][:300]
     if not DRY and len(done) > n_before:
