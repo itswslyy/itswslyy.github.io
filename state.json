@@ -7,7 +7,7 @@
    "dec_year": null
   },
   "reel": {
-   "main": 4,
+   "main": 5,
    "dec": 0,
    "dec_year": null
   }
@@ -42,9 +42,19 @@
   "2026-11-05 00:00 reel",
   "2026-11-05 03:00 feed",
   "2026-11-05 06:00 reel",
-  "2026-11-05 09:00 feed"
+  "2026-11-05 09:00 feed",
+  "2026-11-05 12:00 reel"
  ],
  "history": [
+  {
+   "slot": "2026-11-05 12:00 reel",
+   "kind": "reel",
+   "orig": "2022-04-21",
+   "src": "17845196039759179",
+   "cloud": true,
+   "status": "failed",
+   "error": "'media_url'"
+  },
   {
    "slot": "2026-11-05 09:00 feed",
    "kind": "feed",
@@ -131,5 +141,5 @@
   "feed": "follow (@wslyyofficial) for more relatable content"
  },
  "first_comment": "Full videos on my YouTube \ud83d\udc49 link in bio \ud83c\udfac",
- "last_run": "2026-11-05T09:04+00:00"
+ "last_run": "2026-11-05T12:12+00:00"
 }
