@@ -1,5 +1,7 @@
-"""Cross-posting: every post the autopilot puts on Instagram also goes to your Facebook Page and Threads.
-Each platform switches on by itself once its GitHub secret is added (FB_TOKEN, THREADS_TOKEN).
+"""Cross-posting: every post the autopilot puts on Instagram also goes to your Facebook Page, Threads and YouTube Shorts.
+Each platform switches on by itself once its GitHub secret is added (FB_TOKEN, THREADS_TOKEN, YT_AUTH).
+YouTube only gets Reels. YT_AUTH comes from running youtube_login.py on your PC.
+YouTube privacy: state.json -> "crosspost": {"youtube_privacy": "public"} ("private"/"unlisted" also work).
 Turn one off without removing the secret: state.json -> "crosspost": {"facebook": false} (or "threads").
 Custom captions per platform: state.json -> "crosspost": {"captions": {"threads": {"reel": "...", "feed": "..."}}}.
 A failure on one platform never stops the Instagram post or the other platform."""
@@ -9,6 +11,7 @@ FB_G = "https://graph.facebook.com/v23.0/"
 TH_G = "https://graph.threads.net/v1.0/"
 FB_TOKEN = os.environ.get("FB_TOKEN", "")
 TH_TOKEN = os.environ.get("THREADS_TOKEN", "")
+YT_AUTH = os.environ.get("YT_AUTH", "")
 # Hashtags that only mean something on Instagram - dropped elsewhere
 IG_ONLY_TAGS = {"explore", "explorepage", "instagram", "instagood", "instadaily", "instareels", "igreels", "reelsinstagram"}
 THREADS_MAX = 500
@@ -82,6 +85,8 @@ def enabled(state, cfg):
         on.append("facebook")
     if TH_TOKEN and s.get("threads", True):
         on.append("threads")
+    if YT_AUTH and s.get("youtube", True):
+        on.append("youtube")
     return on
 
 
@@ -183,13 +188,83 @@ def refresh_threads_token(state):
         print("  Threads token refresh failed:", e)
 
 
-def run(kind, fresh, ig_caption, state, cfg, download):
+# ---------- YouTube Shorts ----------
+YT_TITLES = ["This is way too relatable 😂", "Tell me this isn't you 😭", "Why is this so accurate 💀", "Every single time 😂",
+             "Send this to someone who does this 😭", "Nobody talks about this 😂", "I feel personally attacked 💀",
+             "This is literally me 😂", "Be honest, you've done this 😭", "Relatable or just me? 🤔"]
+
+
+def yt_title(caption, src_id):
+    text = re.sub(r"#\w+", "", caption or "").strip()
+    text = re.sub(r"\s+", " ", text)
+    if len(text) < 8:  # caption is only hashtags - pick a title, same post always gets the same one
+        text = YT_TITLES[int(src_id or 0) % len(YT_TITLES)]
+    return (text[:90].rstrip() + " #shorts")[:100]
+
+
+def yt_token():
+    a = json.loads(YT_AUTH)
+    r = _open(urllib.request.Request("https://oauth2.googleapis.com/token", method="POST", data=urllib.parse.urlencode(
+        {"client_id": a["client_id"], "client_secret": a["client_secret"], "refresh_token": a["refresh_token"],
+         "grant_type": "refresh_token"}).encode()))
+    return r["access_token"]
+
+
+def youtube(kind, fresh, caption, state, download, src_id):
+    if kind != "reel":
+        return None  # only Reels go to YouTube
+    tok = yt_token()
+    data = download(fresh["media_url"])
+    custom = state.get("crosspost", {}).get("captions", {}).get("youtube", {}).get("reel")
+    meta = {"snippet": {"title": custom or yt_title(caption, src_id),
+                        "description": (adapt(caption, "youtube") + "\n\n#shorts #relatable #funny").strip(),
+                        "tags": ["shorts", "relatable", "funny", "memes", "relatable memes"], "categoryId": "23"},
+            "status": {"privacyStatus": state.get("crosspost", {}).get("youtube_privacy", "public"),
+                       "selfDeclaredMadeForKids": False}}
+    start = urllib.request.Request(
+        "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+        data=json.dumps(meta).encode(), method="POST",
+        headers={"Authorization": "Bearer " + tok, "Content-Type": "application/json; charset=UTF-8",
+                 "X-Upload-Content-Type": "video/mp4", "X-Upload-Content-Length": str(len(data))})
+    try:
+        with urllib.request.urlopen(start, timeout=60) as r:
+            upload_url = r.headers["Location"]
+    except urllib.error.HTTPError as e:
+        raise ValueError(_yt_err(e))
+    try:
+        with urllib.request.urlopen(urllib.request.Request(upload_url, data=data, method="PUT",
+                                                           headers={"Content-Type": "video/mp4"}), timeout=600) as r:
+            vid = json.load(r)["id"]
+    except urllib.error.HTTPError as e:
+        raise ValueError(_yt_err(e))
+    return "https://youtube.com/shorts/" + vid
+
+
+def _yt_err(e):
+    try:
+        err = json.load(e).get("error", {})
+        reason = (err.get("errors") or [{}])[0].get("reason", "")
+        if reason == "quotaExceeded":
+            return "YouTube's daily upload limit is used up - it resets at 8am UK time"
+        return err.get("message") or f"YouTube error {e.code}"
+    except Exception:
+        return f"YouTube error {e.code}"
+
+
+def run(kind, fresh, ig_caption, state, cfg, download, src_id=None):
     """Post to every enabled platform. Returns {"facebook": {...}, "threads": {...}} for the history log."""
     out = {}
     for platform in enabled(state, cfg):
+        if platform == "youtube" and kind != "reel":
+            continue
         cap = caption_for(platform, kind, ig_caption, state)
         try:
-            url = facebook(kind, fresh, cap, cfg["page_id"], download) if platform == "facebook" else threads(kind, fresh, cap)
+            if platform == "facebook":
+                url = facebook(kind, fresh, cap, cfg["page_id"], download)
+            elif platform == "threads":
+                url = threads(kind, fresh, cap)
+            else:
+                url = youtube(kind, fresh, ig_caption, state, download, src_id)
             out[platform] = {"status": "posted", "url": url}
             print(f"  {platform}: posted", url or "")
         except Exception as e:

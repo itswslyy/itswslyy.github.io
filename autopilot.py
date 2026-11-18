@@ -136,7 +136,7 @@ def main():
         return
     lib = json.load(open("library.json", encoding="utf-8"))
     targets = crosspost.enabled(state, cfg)
-    print("Cross-posting to:", ", ".join(targets) or "nothing (add FB_TOKEN / THREADS_TOKEN secrets to switch on)")
+    print("Cross-posting to:", ", ".join(targets) or "nothing (add FB_TOKEN / THREADS_TOKEN / YT_AUTH secrets to switch on)")
     now = datetime.datetime.now(TZ)
     done = set(state.setdefault("slots_done", []))
     n_before = len(done)
@@ -162,6 +162,10 @@ def main():
                     print(f"{key}: {kind} originally from {item['ts'][:10]} ({item['id']})")
                     if DRY:
                         for t in targets:
+                            if t == "youtube":
+                                if kind == "reel":
+                                    print(f"  would also post to youtube: {crosspost.yt_title(caption, item['id'])!r}")
+                                continue
                             print(f"  would also post to {t}: {crosspost.caption_for(t, kind, caption, state)!r}")
                         break
                     rec = {"slot": key, "kind": kind, "orig": item["ts"][:10], "src": item["id"], "cloud": True}
@@ -186,7 +190,7 @@ def main():
                             rec["error"] = "first comment failed: " + str(e)[:120]
                     print("  posted", url)
                     if targets:
-                        rec["also"] = crosspost.run(kind, fresh, caption, state, cfg, download)
+                        rec["also"] = crosspost.run(kind, fresh, caption, state, cfg, download, item["id"])
                     _dl.clear()
                     break
                 if DRY or rec is None:

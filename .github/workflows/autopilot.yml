@@ -33,6 +33,7 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           FB_TOKEN: ${{ secrets.FB_TOKEN }}
           THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+          YT_AUTH: ${{ secrets.YT_AUTH }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
         run: python autopilot.py
       - name: Save progress
