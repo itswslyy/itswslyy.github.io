@@ -3,6 +3,7 @@ Reels 00/06/12/18, feed posts 03/09/15/21 (UK time). December posts are saved fo
 Oldest -> newest, loops forever; after each full loop the best-performing reposts come round first.
 Set DRY_RUN=1 to see what would post without posting."""
 import datetime, hashlib, json, os, sys, time, urllib.error, urllib.parse, urllib.request
+import crosspost
 from zoneinfo import ZoneInfo
 
 try:
@@ -47,10 +48,20 @@ def wait(cid):
     raise ValueError("Instagram took too long to process it")
 
 
+_dl = {}
+
+
+def download(url):
+    """Downloads are kept for the run so cross-posting doesn't fetch the same file twice."""
+    if url not in _dl:
+        with urllib.request.urlopen(url, timeout=300) as r:
+            _dl[url] = r.read()
+    return _dl[url]
+
+
 def upload_video(url, **params):
     """Instagram often can't fetch its own video links, so download the video and upload the file directly."""
-    with urllib.request.urlopen(url, timeout=300) as r:
-        data = r.read()
+    data = download(url)
     cid = post(IG + "/media", upload_type="resumable", **params)["id"]
     _open(urllib.request.Request(f"https://rupload.facebook.com/ig-api-upload/v23.0/{cid}", data=data, method="POST",
                                  headers={"Authorization": "OAuth " + TOKEN, "offset": "0", "file_size": str(len(data))}))
@@ -115,7 +126,7 @@ def publish(item, caption):
         cid = post(IG + "/media", image_url=fresh["media_url"], caption=caption)["id"]
     wait(cid)
     new_id = post(IG + "/media_publish", creation_id=cid)["id"]
-    return new_id, get(new_id, fields="permalink").get("permalink")
+    return new_id, get(new_id, fields="permalink").get("permalink"), fresh
 
 
 def main():
@@ -124,9 +135,12 @@ def main():
         print("Autopilot is switched off in state.json")
         return
     lib = json.load(open("library.json", encoding="utf-8"))
+    targets = crosspost.enabled(state, cfg)
+    print("Cross-posting to:", ", ".join(targets) or "nothing (add FB_TOKEN / THREADS_TOKEN secrets to switch on)")
     now = datetime.datetime.now(TZ)
     done = set(state.setdefault("slots_done", []))
     n_before = len(done)
+    before_status = json.loads(json.dumps(state.get("crosspost_status")))
     for kind, hours in SLOTS.items():
         for day in (now.date() - datetime.timedelta(days=1), now.date(), now.date() + datetime.timedelta(days=1)):
             for h in hours:
@@ -147,13 +161,16 @@ def main():
                         item = pick(kind, now, state, lib)
                     print(f"{key}: {kind} originally from {item['ts'][:10]} ({item['id']})")
                     if DRY:
+                        for t in targets:
+                            print(f"  would also post to {t}: {crosspost.caption_for(t, kind, caption, state)!r}")
                         break
                     rec = {"slot": key, "kind": kind, "orig": item["ts"][:10], "src": item["id"], "cloud": True}
                     try:
-                        new_id, url = publish(item, caption)
+                        new_id, url, fresh = publish(item, caption)
                     except Exception as e:
                         if isinstance(e, NoMedia):
                             bad.append(item["id"])  # Instagram won't hand out this file (usually copyrighted music) - skip it for good
+                        _dl.clear()
                         rec.update(status="failed", error=str(e)[:200])
                         print("  FAILED", e)
                         state.setdefault("history", []).insert(0, rec)
@@ -168,12 +185,17 @@ def main():
                         except Exception as e:
                             rec["error"] = "first comment failed: " + str(e)[:120]
                     print("  posted", url)
+                    if targets:
+                        rec["also"] = crosspost.run(kind, fresh, caption, state, cfg, download)
+                    _dl.clear()
                     break
                 if DRY or rec is None:
                     continue
                 state.setdefault("history", []).insert(0, rec)
                 state["history"] = state["history"][:300]
-    if not DRY and len(done) > n_before:
+    if not DRY:
+        crosspost.refresh_threads_token(state)
+    if not DRY and (len(done) > n_before or state.get("crosspost_status") != before_status):
         state["last_run"] = now.isoformat(timespec="minutes")
         json.dump(state, open("state.json", "w", encoding="utf-8"), indent=1)  # only saved when something posted
 
