@@ -2,7 +2,7 @@
  "on": true,
  "ptr": {
   "feed": {
-   "main": 59,
+   "main": 60,
    "dec": 0,
    "dec_year": null
   },
@@ -130,7 +130,8 @@
   "18137188861784562",
   "18135021655744792",
   "18019673375959578",
-  "18112406006243763"
+  "18112406006243763",
+  "18155317783557993"
  ],
  "map": {
   "18124650514937633": "18227587702137243",
@@ -249,7 +250,8 @@
   "18137188861784562": "18141722758365262",
   "18135021655744792": "17980468649141680",
   "18019673375959578": "18027062531296114",
-  "18112406006243763": "17997729853876358"
+  "18112406006243763": "17997729853876358",
+  "18155317783557993": "18092101795513815"
  },
  "slots_done": [
   "2026-11-04 09:00 feed",
@@ -369,9 +371,25 @@
   "2026-11-18 15:00 feed",
   "2026-11-18 18:00 reel",
   "2026-11-18 21:00 feed",
-  "2026-11-19 00:00 reel"
+  "2026-11-19 00:00 reel",
+  "2026-11-19 03:00 feed"
  ],
  "history": [
+  {
+   "slot": "2026-11-19 03:00 feed",
+   "kind": "feed",
+   "orig": "2025-01-03",
+   "src": "18092101795513815",
+   "cloud": true,
+   "status": "posted",
+   "url": "https://www.instagram.com/p/Df6EI2Slc2N/",
+   "also": {
+    "facebook": {
+     "status": "failed",
+     "error": "(#200) The permission(s) publish_actions are not available. It has been deprecated. If you want to provide a way for your app users to share content to Facebook, we encourage you to use our Sharing pr"
+    }
+   }
+  },
   {
    "slot": "2026-11-19 00:00 reel",
    "kind": "reel",
@@ -1473,7 +1491,7 @@
   "feed": "follow (@wslyyofficial) for more relatable content"
  },
  "first_comment": "Full videos on my YouTube \ud83d\udc49 link in bio \ud83c\udfac",
- "last_run": "2026-11-18T23:24+00:00",
+ "last_run": "2026-11-19T02:38+00:00",
  "unusable": [
   "17845196039759179",
   "17892531764610163",
