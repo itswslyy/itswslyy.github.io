@@ -75,7 +75,11 @@ def adapt(caption, platform):
 
 def caption_for(platform, kind, ig_caption, state):
     custom = state.get("crosspost", {}).get("captions", {}).get(platform, {}).get(kind)
-    return custom if custom is not None else adapt(ig_caption, platform)
+    if custom is not None:
+        return custom
+    if platform == "facebook":
+        return ig_caption or ""  # Facebook gets the exact Instagram caption, hashtags and all
+    return adapt(ig_caption, platform)
 
 
 def enabled(state, cfg):
