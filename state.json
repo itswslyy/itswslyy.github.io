@@ -7,7 +7,7 @@
    "dec_year": null
   },
   "reel": {
-   "main": 69,
+   "main": 70,
    "dec": 0,
    "dec_year": null
   }
@@ -135,7 +135,8 @@
   "18043057016907279",
   "18122524372967191",
   "18605304511069907",
-  "18179787055451607"
+  "18179787055451607",
+  "18183212344433270"
  ],
  "map": {
   "18124650514937633": "18227587702137243",
@@ -259,7 +260,8 @@
   "18043057016907279": "17898998687728706",
   "18122524372967191": "18026613395550162",
   "18605304511069907": "18275414998192716",
-  "18179787055451607": "17848063401355765"
+  "18179787055451607": "17848063401355765",
+  "18183212344433270": "17958266237355526"
  },
  "slots_done": [
   "2026-11-04 09:00 feed",
@@ -384,9 +386,29 @@
   "2026-11-19 06:00 reel",
   "2026-11-19 09:00 feed",
   "2026-11-19 12:00 reel",
-  "2026-11-19 15:00 feed"
+  "2026-11-19 15:00 feed",
+  "2026-11-19 18:00 reel"
  ],
  "history": [
+  {
+   "slot": "2026-11-19 18:00 reel",
+   "kind": "reel",
+   "orig": "2023-05-15",
+   "src": "17958266237355526",
+   "cloud": true,
+   "status": "posted",
+   "url": "https://www.instagram.com/reel/Df7rI0gDDPZ/",
+   "also": {
+    "facebook": {
+     "status": "failed",
+     "error": "Unsupported get request. Object with ID '1016077218205247' does not exist, cannot be loaded due to missing permissions, or does not support this operation. Please read the Graph API documentation at h"
+    },
+    "youtube": {
+     "status": "posted",
+     "url": "https://youtube.com/shorts/Cjm-CfTY63w"
+    }
+   }
+  },
   {
    "slot": "2026-11-19 15:00 feed",
    "kind": "feed",
@@ -1571,7 +1593,7 @@
   "feed": "follow (@wslyyofficial) for more relatable content"
  },
  "first_comment": "Full videos on my YouTube \ud83d\udc49 link in bio \ud83c\udfac",
- "last_run": "2026-11-19T14:39+00:00",
+ "last_run": "2026-11-19T17:42+00:00",
  "unusable": [
   "17845196039759179",
   "17892531764610163",
