@@ -129,6 +129,33 @@ def publish(item, caption):
     return new_id, get(new_id, fields="permalink").get("permalink"), fresh
 
 
+def next_new(state):
+    """Next freshly made tweet post from queue.json (made by tweetmaker.py) that hasn't been posted yet and is live
+    on GitHub Pages (Pages takes a minute or two to publish after a push)."""
+    try:
+        queue = json.load(open("queue.json", encoding="utf-8"))
+    except Exception:
+        return None
+    done = set(state.get("new_done", []))
+    for q in queue:
+        if q["id"] in done:
+            continue
+        try:
+            with urllib.request.urlopen(urllib.request.Request(q["url"], method="HEAD"), timeout=20):
+                return q
+        except Exception:
+            print(f"  new post {q['id']} isn't live on GitHub Pages yet, using a repost this time")
+            return None
+    return None
+
+
+def publish_new(q, caption):
+    cid = post(IG + "/media", image_url=q["url"], caption=caption)["id"]
+    wait(cid)
+    new_id = post(IG + "/media_publish", creation_id=cid)["id"]
+    return new_id, get(new_id, fields="permalink").get("permalink"), {"media_type": "IMAGE", "media_url": q["url"]}
+
+
 def main():
     state = json.load(open("state.json", encoding="utf-8"))
     if not state.get("on", True):
@@ -154,7 +181,38 @@ def main():
                 state["slots_done"] = (state["slots_done"] + [key])[-200:]
                 done.add(key)
                 caption = state.get("captions", {}).get(kind, "")
-                bad = state.setdefault("unusable", [])
+                q = next_new(state) if kind == "feed" else None
+                if q:  # freshly made tweet posts go before reposts
+                    print(f"{key}: new tweet post {q['id']}: {q['text'][:60]!r}")
+                    if DRY:
+                        continue
+                    rec = {"slot": key, "kind": kind, "new": q["id"], "cloud": True}
+                    try:
+                        new_id, url, fresh = publish_new(q, caption)
+                        state.setdefault("new_done", []).append(q["id"])
+                        rec.update(status="posted", url=url)
+                        if state.get("first_comment"):
+                            try:
+                                post(new_id + "/comments", message=state["first_comment"])
+                            except Exception as e:
+                                rec["error"] = "first comment failed: " + str(e)[:120]
+                        print("  posted", url)
+                        if targets:
+                            rec["also"] = crosspost.run(kind, fresh, caption, state, cfg, download, q["id"])
+                        _dl.clear()
+                        state.setdefault("history", []).insert(0, rec)
+                        state["history"] = state["history"][:300]
+                        continue
+                    except Exception as e:  # fall back to a repost so the slot isn't empty
+                        _dl.clear()
+                        rec.update(status="failed", error=str(e)[:200])
+                        print("  FAILED", e)
+                        state.setdefault("history", []).insert(0, rec)
+                        fails = state.setdefault("new_fails", {})
+                        fails[q["id"]] = fails.get(q["id"], 0) + 1
+                        if fails[q["id"]] >= 2:  # give up on it so it doesn't block the queue
+                            state.setdefault("new_done", []).append(q["id"])
+                bad =state.setdefault("unusable", [])
                 for attempt in range(3):  # if a post can't be reposted, use the next one so the slot isn't empty
                     item = pick(kind, now, state, lib)
                     while item["id"] in bad:
