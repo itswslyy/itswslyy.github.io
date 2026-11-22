@@ -129,7 +129,7 @@ def publish(item, caption):
     return new_id, get(new_id, fields="permalink").get("permalink"), fresh
 
 
-def next_new(state):
+def next_new(state, kind="feed"):
     """Next freshly made tweet post from queue.json (made by tweetmaker.py) that hasn't been posted yet and is live
     on GitHub Pages (Pages takes a minute or two to publish after a push)."""
     try:
@@ -138,7 +138,7 @@ def next_new(state):
         return None
     done = set(state.get("new_done", []))
     for q in queue:
-        if q["id"] in done:
+        if q["id"] in done or q.get("kind", "feed") != kind:
             continue
         try:
             with urllib.request.urlopen(urllib.request.Request(q["url"], method="HEAD"), timeout=20):
@@ -150,10 +150,15 @@ def next_new(state):
 
 
 def publish_new(q, caption):
-    cid = post(IG + "/media", image_url=q["url"], caption=caption)["id"]
+    reel = q.get("kind") == "reel"
+    if reel:
+        cid = upload_video(q["url"], media_type="REELS", caption=caption, share_to_feed="true")
+    else:
+        cid = post(IG + "/media", image_url=q["url"], caption=caption)["id"]
     wait(cid)
     new_id = post(IG + "/media_publish", creation_id=cid)["id"]
-    return new_id, get(new_id, fields="permalink").get("permalink"), {"media_type": "IMAGE", "media_url": q["url"]}
+    return new_id, get(new_id, fields="permalink").get("permalink"), {"media_type": "VIDEO" if reel else "IMAGE",
+                                                                         "media_url": q["url"]}
 
 
 def main():
@@ -181,9 +186,9 @@ def main():
                 state["slots_done"] = (state["slots_done"] + [key])[-200:]
                 done.add(key)
                 caption = state.get("captions", {}).get(kind, "")
-                q = next_new(state) if kind == "feed" else None
-                if q:  # freshly made tweet posts go before reposts
-                    print(f"{key}: new tweet post {q['id']}: {q['text'][:60]!r}")
+                q = next_new(state, kind)
+                if q:  # freshly made tweet posts / Reels go before reposts
+                    print(f"{key}: new {kind} {q['id']}: {q['text'][:60]!r}")
                     if DRY:
                         continue
                     rec = {"slot": key, "kind": kind, "new": q["id"], "cloud": True}
