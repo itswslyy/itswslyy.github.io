@@ -151,6 +151,17 @@ def next_new(state, kind="feed"):
 
 def publish_new(q, caption):
     reel = q.get("kind") == "reel"
+    if q.get("urls"):  # carousel of tweet slides
+        kids = []
+        for u in q["urls"]:
+            k = post(IG + "/media", is_carousel_item="true", image_url=u)["id"]
+            wait(k)
+            kids.append(k)
+        cid = post(IG + "/media", media_type="CAROUSEL", children=",".join(kids), caption=caption)["id"]
+        wait(cid)
+        new_id = post(IG + "/media_publish", creation_id=cid)["id"]
+        return new_id, get(new_id, fields="permalink").get("permalink"), {
+            "media_type": "CAROUSEL_ALBUM", "children": {"data": [{"media_type": "IMAGE", "media_url": u} for u in q["urls"]]}}
     if reel:
         cid = upload_video(q["url"], media_type="REELS", caption=caption, share_to_feed="true")
     else:
@@ -203,7 +214,7 @@ def main():
                                 rec["error"] = "first comment failed: " + str(e)[:120]
                         print("  posted", url)
                         if targets:
-                            rec["also"] = crosspost.run(kind, fresh, caption, state, cfg, download, q["id"])
+                            rec["also"] = crosspost.run(kind, fresh, caption, state, cfg, download, q["id"], text=q.get("text"))
                         _dl.clear()
                         state.setdefault("history", []).insert(0, rec)
                         state["history"] = state["history"][:300]

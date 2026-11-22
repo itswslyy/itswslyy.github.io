@@ -73,13 +73,52 @@ def adapt(caption, platform):
     return text
 
 
-def caption_for(platform, kind, ig_caption, state):
+# Facebook doesn't reward Instagram hashtags; it rewards shares and comments, so each post gets a share/comment prompt
+FB_CTAS = ["Tag someone who needs to see this 😂", "Send this to them 👀", "Be honest... is this you? 👇",
+           "Share this with the one who gets it", "Who does this remind you of? 😂", "Comment 💯 if this is you",
+           "Tag your person ❤️", "Facebook, are we the same? 👇"]
+FB_FOOTER = "Follow Wslyyofficial for more"
+
+
+def fb_caption(state):
+    st = state.setdefault("crosspost_status", {})
+    n = st.get("fb_cta", 0)
+    st["fb_cta"] = n + 1
+    return FB_CTAS[n % len(FB_CTAS)] + "\n\n" + FB_FOOTER
+
+
+def caption_for(platform, kind, ig_caption, state, text=None):
     custom = state.get("crosspost", {}).get("captions", {}).get(platform, {}).get(kind)
     if custom is not None:
         return custom
     if platform == "facebook":
-        return ig_caption or ""  # Facebook gets the exact Instagram caption, hashtags and all
+        return fb_caption(state)
     return adapt(ig_caption, platform)
+
+
+# Facebook gets its own posting times (UK): its audience is on in the day and evening, not at 00:00-06:00 like
+# some Instagram slots. Each cross-post is scheduled into the next free slot and Facebook publishes it itself.
+FB_SLOTS = (7, 9, 12, 14, 17, 19, 21, 22)
+
+
+def fb_slot(state):
+    try:
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo("Europe/London")
+    except Exception:  # Windows without tzdata (local testing only)
+        tz = datetime.datetime.now().astimezone().tzinfo
+    now = datetime.datetime.now(tz)
+    st = state.setdefault("crosspost_status", {})
+    used = set(st.get("fb_slots", []))
+    for day in range(4):
+        d = now.date() + datetime.timedelta(days=day)
+        for h in FB_SLOTS:
+            t = datetime.datetime.combine(d, datetime.time(h), tz)
+            key = t.strftime("%Y-%m-%d %H")
+            if t > now + datetime.timedelta(minutes=20) and key not in used:
+                st["fb_slots"] = (sorted(used) + [key])[-60:]
+                return int(t.timestamp()), key
+    return None, None
 
 
 def enabled(state, cfg):
@@ -107,28 +146,33 @@ def fb_wait(vid):
         time.sleep(10)
 
 
-def facebook(kind, fresh, caption, page, download):
+def facebook(kind, fresh, caption, page, download, when=None):
+    """when = unix time to schedule it for (None = publish now). Returns the post's link."""
+    sch = {"published": "false", "scheduled_publish_time": str(when)} if when else {}
     if kind == "reel":
         vid = _post(FB_G, FB_TOKEN, page + "/video_reels", upload_phase="start")["video_id"]
         data = download(fresh["media_url"])
         _open(urllib.request.Request(f"https://rupload.facebook.com/video-upload/v23.0/{vid}", data=data, method="POST",
                                      headers={"Authorization": "OAuth " + FB_TOKEN, "offset": "0", "file_size": str(len(data))}),
               timeout=300)
-        _post(FB_G, FB_TOKEN, page + "/video_reels", upload_phase="finish", video_id=vid, video_state="PUBLISHED",
-              description=caption)
-        fb_wait(vid)
+        extra = {"video_state": "SCHEDULED", "scheduled_publish_time": str(when)} if when else {"video_state": "PUBLISHED"}
+        _post(FB_G, FB_TOKEN, page + "/video_reels", upload_phase="finish", video_id=vid, description=caption, **extra)
+        if not when:
+            fb_wait(vid)
         return f"https://www.facebook.com/reel/{vid}"
     if fresh.get("media_type") == "CAROUSEL_ALBUM":
         pics = [c["media_url"] for c in fresh.get("children", {}).get("data", []) if c.get("media_type") == "IMAGE"]
         if not pics:
             raise ValueError("carousel has no photos (videos inside carousels aren't cross-posted to Facebook)")
         if len(pics) > 1:
-            ids = [_post_file(page + "/photos", download(u), f"{i}.jpg", published="false")["id"] for i, u in enumerate(pics)]
+            tmp = {"temporary": "true"} if when else {}
+            ids = [_post_file(page + "/photos", download(u), f"{i}.jpg", published="false", **tmp)["id"]
+                   for i, u in enumerate(pics)]
             att = {f"attached_media[{i}]": json.dumps({"media_fbid": x}) for i, x in enumerate(ids)}
-            pid = _post(FB_G, FB_TOKEN, page + "/feed", message=caption, **att)["id"]
+            pid = _post(FB_G, FB_TOKEN, page + "/feed", message=caption, **att, **sch)["id"]
             return "https://www.facebook.com/" + pid
         fresh = {"media_url": pics[0]}
-    r = _post_file(page + "/photos", download(fresh["media_url"]), "photo.jpg", message=caption)
+    r = _post_file(page + "/photos", download(fresh["media_url"]), "photo.jpg", message=caption, **sch)
     return "https://www.facebook.com/" + r.get("post_id", r["id"])
 
 
@@ -255,16 +299,27 @@ def _yt_err(e):
         return f"YouTube error {e.code}"
 
 
-def run(kind, fresh, ig_caption, state, cfg, download, src_id=None):
+def run(kind, fresh, ig_caption, state, cfg, download, src_id=None, text=None):
     """Post to every enabled platform. Returns {"facebook": {...}, "threads": {...}} for the history log."""
     out = {}
     for platform in enabled(state, cfg):
         if platform == "youtube" and kind != "reel":
             continue
-        cap = caption_for(platform, kind, ig_caption, state)
+        cap = caption_for(platform, kind, ig_caption, state, text)
         try:
             if platform == "facebook":
-                url = facebook(kind, fresh, cap, cfg["page_id"], download)
+                when, key = fb_slot(state) if state.get("crosspost", {}).get("fb_schedule", True) else (None, None)
+                try:
+                    url = facebook(kind, fresh, cap, cfg["page_id"], download, when)
+                    if when:
+                        out[platform] = {"status": "scheduled", "for": key, "url": url}
+                        print(f"  facebook: scheduled for {key}:00", url)
+                        continue
+                except Exception as e:
+                    if not when:
+                        raise
+                    print("  facebook: scheduling failed, posting now:", e)
+                    url = facebook(kind, fresh, cap, cfg["page_id"], download)
             elif platform == "threads":
                 url = threads(kind, fresh, cap)
             else:
