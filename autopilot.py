@@ -203,8 +203,9 @@ def main():
                     if DRY:
                         continue
                     rec = {"slot": key, "kind": kind, "new": q["id"], "cloud": True}
+                    cap = q.get("caption") or caption  # each new post has its own caption + hashtags
                     try:
-                        new_id, url, fresh = publish_new(q, caption)
+                        new_id, url, fresh = publish_new(q, cap)
                         state.setdefault("new_done", []).append(q["id"])
                         rec.update(status="posted", url=url)
                         if state.get("first_comment"):
@@ -214,7 +215,7 @@ def main():
                                 rec["error"] = "first comment failed: " + str(e)[:120]
                         print("  posted", url)
                         if targets:
-                            rec["also"] = crosspost.run(kind, fresh, caption, state, cfg, download, q["id"], text=q.get("text"))
+                            rec["also"] = crosspost.run(kind, fresh, cap, state, cfg, download, q["id"], text=q.get("caption"))
                         _dl.clear()
                         state.setdefault("history", []).insert(0, rec)
                         state["history"] = state["history"][:300]

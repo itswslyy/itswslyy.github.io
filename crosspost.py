@@ -74,9 +74,11 @@ def adapt(caption, platform):
 
 
 # Facebook doesn't reward Instagram hashtags; it rewards shares and comments, so each post gets a share/comment prompt
-FB_CTAS = ["Tag someone who needs to see this 😂", "Send this to them 👀", "Be honest... is this you? 👇",
-           "Share this with the one who gets it", "Who does this remind you of? 😂", "Comment 💯 if this is you",
-           "Tag your person ❤️", "Facebook, are we the same? 👇"]
+# (specific send prompts - Facebook demotes "tag someone"/"comment X" engagement bait)
+FB_CTAS = ["Send this to the one who always leaves you on read", "Share this with the friend who'd do this",
+           "Send this to your person", "Be honest, is this you?", "Who does this remind you of?",
+           "Send this to the one who needs to hear it", "Share this if you've been here",
+           "Send this to the group chat"]
 FB_FOOTER = "Follow Wslyyofficial for more"
 
 
@@ -92,7 +94,7 @@ def caption_for(platform, kind, ig_caption, state, text=None):
     if custom is not None:
         return custom
     if platform == "facebook":
-        return fb_caption(state)
+        return adapt(text, "facebook") if text else fb_caption(state)  # post's own caption minus Instagram-only tags
     return adapt(ig_caption, platform)
 
 
