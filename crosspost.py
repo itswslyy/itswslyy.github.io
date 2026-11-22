@@ -94,7 +94,7 @@ def caption_for(platform, kind, ig_caption, state, text=None):
     if custom is not None:
         return custom
     if platform == "facebook":
-        return adapt(text, "facebook") if text else fb_caption(state)  # post's own caption minus Instagram-only tags
+        return ig_caption or ""  # Facebook gets the exact Instagram caption
     return adapt(ig_caption, platform)
 
 
