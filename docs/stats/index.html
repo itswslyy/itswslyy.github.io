@@ -916,9 +916,12 @@ function nowStripHTML(){
   const tot = s => Object.values(s).reduce((a,v)=>a+(v.f||0),0), hs = data.history, last = hs[hs.length-1], hr = [...hs].reverse().find(x => x[0] <= data.updated-3600);
   const f1 = last && hr ? tot(last[1]) - tot(hr[1]) : null;
   const hot = allPosts().map(p => ({p, v: velocity(p)})).filter(x => x.v > 0).sort((a,b) => b.v-a.v)[0];
-  liveRate = v15 / 15;   // views per minute
+  // views a minute: Instagram's real account-wide rate (every post, not just recent ones) + other accounts' recent posts
+  const R = data.rates || {}, igr = ["instagram","musicig"].filter(k => R[k] != null), igSum = igr.reduce((a,k) => a + R[k], 0);
+  let other = 0; for(const h of Object.values(H)){ if(igr.includes(h.k)) continue; const p = h.pts; if(p.length < 2) continue; const l = p[p.length-1], pr = [...p].reverse().find(x => x[0] <= l[0]-900) || p[0]; other += Math.max(0, l[1]-pr[1]); }
+  liveRate = igr.length ? igSum + other/15 : v15/15;
   return `<button class="glass livebar rv" style="--i:1" id="openlive"><canvas class="mglobe" width="120" height="120"></canvas>
-      <span><b class="num" id="viewers">–</b><small>people viewing your posts right now</small></span><em>Live view ›</em></button>
+      <span><b class="num" id="viewers">–</b><small>watching now · <span id="vpm">–</span> views a minute, all accounts</small></span><em>Live view ›</em></button>
     <div class="glass now rv" style="--i:1"><div class="nlive"><i></i>Right now</div>
     <div class="ncell"><b class="num roll" data-key="n15" data-v="${v15}"></b><small>views · last 15 min</small></div>
     <div class="ncell"><b class="num roll" data-key="n1h" data-v="${f1 ?? ""}"></b><small>followers · last hour</small></div>
@@ -973,8 +976,9 @@ function miniGlobe(cv){   // light 2D orthographic globe: audience dots + sessio
   requestAnimationFrame(frame);
 }
 setInterval(() => {   // viewers ≈ views per minute × ~0.6 min average watch, drifting gently
-  const el = $("viewers"), b = $("bdviewers"); if(!data) return; const base = Math.max(0, Math.round(liveRate*.6*(1 + (Math.random()-.5)*.08)));
-  if(el) el.textContent = base ? `≈ ${full(base)}` : "–"; if(b) b.textContent = full(base); }, 2200);
+  const el = $("viewers"), b = $("bdviewers"), vpm = $("vpm"); if(!data) return;   // a view lasts ~15s on average, so watching now ≈ views a minute × 0.25
+  const base = Math.max(0, Math.round(liveRate*.25*(1 + (Math.random()-.5)*.08)));
+  if(el) el.textContent = base ? `≈ ${full(base)}` : "–"; if(b) b.textContent = full(base); if(vpm) vpm.textContent = full(Math.round(liveRate)); }, 2200);
 function isRecordDay(){ const d = (data.days || []).map(x => Object.values(x.f||{}).reduce((a,b)=>a+b,0)); return d.length >= 3 && todayVals().followers > Math.max(...d); }
 function openLive(){
   const bd = $("bigday"); bd.classList.add("open"); const v = todayVals();
