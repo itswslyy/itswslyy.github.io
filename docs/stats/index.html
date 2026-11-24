@@ -312,6 +312,50 @@ body.settled .chart .area{animation:none;opacity:1}
 #reveal.open p{opacity:1}
 #reveal .tap{position:absolute;bottom:calc(var(--bot) + 30px);font-size:12px;color:var(--mute)}
 
+/* ---------- ribbon intro ---------- */
+#sting canvas{position:absolute;inset:0;width:100%;height:100%}
+#sting.fade{transition:opacity .45s;opacity:0}
+/* ---------- world globe ---------- */
+.world{position:relative;height:max(400px,calc(100vh - 330px));border-radius:26px;overflow:hidden;background:#000;touch-action:none}
+.world canvas{width:100%;height:100%;display:block}
+.wtop{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:8px;z-index:2}
+.wtop form{flex:1}
+.wtop input{width:100%;font:inherit;font-size:15px;padding:11px 14px;border-radius:14px;border:1px solid var(--stroke2);background:rgba(10,12,22,.6);color:var(--text);outline:none;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.wtop .iconbtn{flex:none;background:rgba(10,12,22,.6)}
+.wfocus{position:absolute;left:12px;bottom:12px;right:12px;z-index:2;padding:14px 16px;border-radius:18px;background:rgba(10,12,22,.66);border:1px solid var(--stroke2);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transform:translateY(130%);transition:transform .6s var(--out)}
+.wfocus.on{transform:none}
+.wfocus small{color:var(--dim);font-size:12px}
+.wfocus b{display:block;font-size:20px}
+.wfocus .big{font-size:30px;font-weight:800;letter-spacing:-.03em}
+.wchip{position:absolute;top:64px;left:12px;z-index:2;font-size:12px;padding:6px 11px;border-radius:999px;background:rgba(10,12,22,.6);border:1px solid var(--stroke);color:#dfe3f0;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.wchip i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ffd37a;margin-right:6px;box-shadow:0 0 8px #ffd37a}
+.wblink{position:absolute;z-index:2;pointer-events:none;font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;background:rgba(255,45,122,.85);transform:translate(-50%,-140%);opacity:0;transition:opacity .4s}
+.wblink.on{opacity:1}
+.wmsg{position:absolute;inset:auto 0 50% 0;text-align:center;color:var(--dim);font-size:13px;z-index:2;pointer-events:none}
+.place{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--stroke);width:100%;text-align:left}
+.place:first-child{border-top:0}
+.place .nm{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.place .bar{flex:1.2;height:6px;margin:0;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+.place .bar span{display:block;height:100%;background:linear-gradient(90deg,#ec4899,#f59e0b)}
+.place b{width:56px;text-align:right;font-size:14px}
+/* ---------- arriving (route) ---------- */
+.arrive{padding:16px}
+.arrive .eta{font-size:13px;color:var(--dim)}
+.arrive .eta b{display:block;font-size:26px;color:var(--text);letter-spacing:-.03em}
+.route{position:relative;height:46px;margin:14px 6px 6px}
+.route .ln{position:absolute;left:0;right:0;top:21px;height:4px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.route .ln span{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#8b5cf6,#ec4899);border-radius:3px}
+.route .ln span::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 8px,transparent 8px 18px);animation:dash 1s linear infinite;opacity:.5}
+@keyframes dash{to{background-position:18px 0}}
+.route .car{position:absolute;top:12px;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px rgba(236,72,153,.35),0 0 18px #ec4899;transition:left 1.6s var(--out)}
+.route .car::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid rgba(236,72,153,.6);animation:ringout 1.8s ease-out infinite}
+@keyframes ringout{from{transform:scale(.6);opacity:1}to{transform:scale(1.6);opacity:0}}
+.route .flag{position:absolute;right:-4px;top:6px;font-size:22px}
+.route .ends{position:absolute;left:0;right:0;top:34px;display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
+.arow{display:flex;justify-content:space-between;font-size:13px;color:var(--dim);padding:8px 2px 0;border-top:1px solid var(--stroke);margin-top:10px}
+.arow b{color:var(--text)}
+#trail{width:100%;height:180px;display:block;border-radius:16px;background:#070912}
+
 /* milestone rings (growth) */
 .gcard{padding:14px 14px 10px;margin-bottom:14px}
 .ghead{display:flex;align-items:center;gap:10px}
@@ -336,8 +380,8 @@ main{position:relative;perspective:1400px}
 @keyframes coutB{to{transform:translateX(60%) rotateY(-62deg);opacity:0}}
 
 /* ---------- tab bar ---------- */
-nav{position:fixed;z-index:21;left:50%;transform:translateX(-50%);bottom:calc(var(--bot) + 12px);width:min(calc(100% - 32px),420px);height:66px;border-radius:24px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;background:rgba(14,16,28,.78);border:1px solid var(--stroke2);backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);box-shadow:0 20px 50px -10px rgba(0,0,0,.7)}
-nav .pill{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/4);border-radius:18px;background:var(--g-hero);opacity:.92;transition:transform .55s var(--spring)}
+nav{position:fixed;z-index:21;left:50%;transform:translateX(-50%);bottom:calc(var(--bot) + 12px);width:min(calc(100% - 24px),440px);height:66px;border-radius:24px;display:grid;grid-template-columns:repeat(5,1fr);padding:6px;background:rgba(14,16,28,.78);border:1px solid var(--stroke2);backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);box-shadow:0 20px 50px -10px rgba(0,0,0,.7)}
+nav .pill{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/5);border-radius:18px;background:var(--g-hero);opacity:.92;transition:transform .55s var(--spring)}
 nav button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:600;color:var(--dim);transition:color .3s}
 nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .45s var(--spring)}
 nav button[aria-selected="true"]{color:#fff}
@@ -364,12 +408,7 @@ body.calm .rv{opacity:1;transform:none}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="liquid"><feTurbulence id="turb" type="fractalNoise" baseFrequency="0.012 0.06" numOctaves="2" seed="3"/><feDisplacementMap id="disp" in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
 <div id="bg"><canvas id="field"></canvas><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="vign"></div><div class="grain"></div></div>
 
-<div id="sting" class="hide" aria-hidden="true"><div class="glow"></div>
-  <svg viewBox="0 0 120 120"><defs><linearGradient id="mkg" x1="0" x2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset=".5" stop-color="#ec4899"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs>
-    <path class="mk r" pathLength="1" d="M18 36 L38 86 L60 46 L82 86 L102 36"/>
-    <path class="mk b" pathLength="1" d="M18 36 L38 86 L60 46 L82 86 L102 36"/>
-    <path class="mk main" pathLength="1" stroke="url(#mkg)" d="M18 36 L38 86 L60 46 L82 86 L102 36"/></svg>
-</div>
+<div id="sting" class="hide" aria-hidden="true"><canvas></canvas></div>
 
 <div id="lock" class="hide"><div class="glass slab">
   <h1>My <span style="background:var(--g-hero);-webkit-background-clip:text;background-clip:text;color:transparent">Stats</span></h1>
@@ -395,6 +434,15 @@ body.calm .rv{opacity:1;transform:none}
       <section class="page" id="p-accounts"></section>
       <section class="page" id="p-top"></section>
       <section class="page" id="p-growth"></section>
+      <section class="page" id="p-world">
+        <div class="world rv" style="--i:0" id="world"><canvas></canvas>
+          <div class="wtop"><form id="wsearch"><input type="search" placeholder="Search a city or country" enterkeyhint="search" autocomplete="off"></form><button class="iconbtn" id="whome" aria-label="Fly home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg></button></div>
+          <div class="wchip" id="wawake"></div><div class="wblink" id="wblink"></div><div class="wmsg" id="wmsg">Loading the globe…</div>
+          <div class="wfocus" id="wfocus"></div>
+        </div>
+        <div class="sec rv" style="--i:1"><h2>Where your audience is</h2><small>Instagram · tap to fly</small></div>
+        <div class="glass rv" style="--i:2" id="wplaces"></div>
+      </section>
     </main>
     <div class="foot">Live · refreshes every 5 min · swipe to switch tabs</div>
   </div>
@@ -405,6 +453,7 @@ body.calm .rv{opacity:1;transform:none}
     <button role="tab" data-tab="accounts"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg>Accounts</button>
     <button role="tab" data-tab="top"><svg viewBox="0 0 24 24"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.2 1.6 1 2.6 2 3 0-3.5 0-6 1-8.5Z"/></svg>Top</button>
     <button role="tab" data-tab="growth"><svg viewBox="0 0 24 24"><path d="M3 17l5.5-5.5 4 4L21 7"/><path d="M15 7h6v6"/></svg>Growth</button>
+    <button role="tab" data-tab="world"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>World</button>
   </nav>
 </div>
 
@@ -425,8 +474,8 @@ const ICON = {
 ICON.wezla = ICON.youtube;
 const META = { instagram:{label:"Instagram",hex:"#e1306c"}, wezla:{label:"wezla",sub:"YouTube",hex:"#c47200"}, facebook:{label:"Facebook",hex:"#3b7ff0"}, youtube:{label:"Relatable",sub:"YouTube",hex:"#f0443a"}, threads:{label:"Threads",hex:"#1fa88c"} };
 const ORDER = Object.keys(META);
-const TABS = ["home","accounts","top","growth"];
-const TITLES = {home:["Your","empire"],accounts:["Your","accounts"],top:["Top","posts"],growth:["Your","growth"]};
+const TABS = ["home","accounts","top","growth","world"];
+const TITLES = {home:["Your","empire"],accounts:["Your","accounts"],top:["Top","posts"],growth:["Your","growth"],world:["Your","world"]};
 const MILESTONES = [100,250,500,1000,2500,5000,10000,25000,50000,75000,90000,100000,150000,250000,500000,1e6];
 const $ = id => document.getElementById(id);
 const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}}};
@@ -606,8 +655,26 @@ function homePage(){
   </div>
   <div class="sec rv" style="--i:1"><h2>Today</h2><small>goals adapt to your average</small></div>
   <div class="glass rings3 rv" style="--i:2">${ringsSVG()}</div>
+  <div class="sec rv" style="--i:3"><h2>Next stop</h2><small>at your current pace</small></div>
+  <div class="glass arrive rv" style="--i:3">${arriveHTML()}</div>
   <div class="sec rv" style="--i:3"><h2>Live activity</h2><small>newest first</small></div>
   <div class="glass feed rv" style="--i:4" id="feed">${feedHTML()}</div>`;
+}
+function pace(k){ // followers per day over up to the last 7 days
+  const s = series(k, data.updated - 7*86400); if(s.length < 2) return null;
+  const days = (s[s.length-1][0] - s[0][0]) / 86400; return days < 2/24 ? null : (s[s.length-1][1] - s[0][1]) / days;
+}
+function nextMile(f){ return MILESTONES.find(m => m > f) || Math.ceil(f*1.5/1e5)*1e5; }
+function etaText(days){ return days == null ? "Working out your pace…" : days < 1 ? `Arriving in ~${Math.max(1, Math.round(days*24))} hours` : `Arriving in ~${Math.round(days)} day${Math.round(days) === 1 ? "" : "s"}`; }
+function arriveHTML(){
+  const rows = keys().filter(k => data.accounts[k].followers != null).map(k => { const f = data.accounts[k].followers, m = nextMile(f), prev = [...MILESTONES].reverse().find(x => x <= f) || 0, p = pace(k);
+    return {k, f, m, prog: (f-prev)/(m-prev), p, days: p > 0 ? (m-f)/p : null}; }).sort((a,b) => b.f - a.f);
+  if(!rows.length) return "";
+  const r = rows[0];
+  return `<div class="eta">${META[r.k].label} → ${fmt(r.m)} followers<b>${etaText(r.days)}</b>${r.p > 0 ? `at +${fmt(r.p)} a day · ${full(r.m - r.f)} to go` : `${full(r.m - r.f)} to go`}</div>
+    <div class="route"><div class="ln"><span style="width:${(r.prog*100).toFixed(1)}%"></span></div><div class="car" style="left:${(r.prog*100).toFixed(1)}%"></div><div class="flag">🏁</div>
+      <div class="ends"><span>${fmt(r.f)} now</span><span>${fmt(r.m)}</span></div></div>
+    ${rows.slice(1).map(x => `<div class="arow"><span>${META[x.k].label} → ${fmt(x.m)}</span><b>${x.days == null ? "–" : x.days < 1 ? "<1 day" : "~" + Math.round(x.days) + " days"}</b></div>`).join("")}`;
 }
 function todayVals(){
   const td = data.today || {}, ig = data.accounts.instagram || {};
@@ -749,7 +816,8 @@ function render(){
   if(!firstPaint) document.body.classList.add("settled");
   const ht = $("htotal"); roll(ht, totalF(), full, "#ec4899"); if(prevTotal != null && prevTotal !== totalF()) setTimeout(() => ripple(ht), 300);
   field.set(growthRatio());
-  miniBar(); instant = !firstPaint; activate(tab, 0); instant = false; wire();
+  miniBar(); worldList(); instant = !firstPaint; activate(tab, 0); instant = false; wire();
+  if(globeApi && prevTotal != null && totalF() > prevTotal) globeApi.arcs(4);
   // live pill + medal reveal for new events
   const evs = data.events || [], maxId = evs.reduce((m,e)=>Math.max(m,e.id),0);
   if(seenEv === 0) seenEv = maxId; // first run: don't replay history
@@ -786,6 +854,7 @@ function animatePage(id){
   }));
   if(id === "accounts") layoutWallet();
   if(id === "growth") setTimeout(() => { land(); shelf(); }, 380);
+  if(id === "world") setTimeout(globe, 250);
 }
 function sparks(ar){
   const today = (data.today||{}).date || "", key = "stats_spark_" + today, done = store.get(key) || "000", over = ar.dataset.over;
@@ -845,10 +914,33 @@ function fillSheet(first=true){
     <h3>${esc(p.title)||"Latest post"}</h3><div class="meta">${META[k].label} · ${esc(p.kind||"post")} · posted ${when(p.ts)}</div>
     <div class="bigv num chrome" id="sviews"></div><div class="vel">${v!=null?`▲ ${fmt(Math.max(0,v))} views per hour right now`:"Tracking speed — check back in a few minutes"}</div>
     <div class="grid4"><div>Likes<b>${fmt(p.likes)}</b></div><div>Comments<b>${fmt(p.comments)}</b></div><div>Shares<b>${fmt(p.shares)}</b></div><div>Saves<b>${fmt(p.saves)}</b></div></div>
-    ${h && h.pts.length > 1 ? `<div class="glass" style="padding:12px"><div style="font-size:12px;color:var(--dim)">Views since posting</div><div class="chart">${areaSVG("live", h.pts, META[k].hex)}</div></div>` : ""}
+    ${h && h.pts.length > 1 ? `<div class="glass" style="padding:12px"><div style="font-size:12px;color:var(--dim);margin-bottom:8px">Live view trail</div><canvas id="trail"></canvas></div>` : ""}
     <a class="bigbtn" style="--g:${G(k)}" href="${esc(p.url)}" target="_blank" rel="noopener">Open post ↗</a><button class="ghostbtn" id="sclose">Close</button>`;
   roll($("sviews"), p.views, full, META[k].hex);
   $("sclose").onclick = closeSheet;
+  if(h && h.pts.length > 1) trail($("trail"), h.pts, META[k].hex, first);
+}
+let trailRaf = 0;
+function trail(cv, pts, color, intro){   // views as a glowing route on a dark map grid, with a pulsing live point
+  cancelAnimationFrame(trailRaf); const d = Math.min(2, devicePixelRatio||1), W = cv.width = cv.clientWidth*d, H = cv.height = cv.clientHeight*d, x = cv.getContext("2d");
+  const t0 = pts[0][0], t1 = pts[pts.length-1][0], v1 = Math.max(1, pts[pts.length-1][1]), pad = 16*d;
+  const P = pts.map(([t,v]) => [pad + (t-t0)/(t1-t0||1)*(W-2*pad), H - pad - v/v1*(H-2*pad)]);
+  const start = performance.now() - (intro ? 0 : 5000);
+  const frame = now => {
+    if(!cv.isConnected) return; const e = (now - start)/1000, k = Math.min(1, e/1.4), n = Math.max(2, Math.ceil(P.length*k));
+    x.clearRect(0,0,W,H); x.strokeStyle = "rgba(120,140,200,.07)"; x.lineWidth = d;
+    for(let gx = 0; gx < W; gx += 22*d){ x.beginPath(); x.moveTo(gx,0); x.lineTo(gx,H); x.stroke(); }
+    for(let gy = 0; gy < H; gy += 22*d){ x.beginPath(); x.moveTo(0,gy); x.lineTo(W,gy); x.stroke(); }
+    x.strokeStyle = "rgba(120,140,200,.12)"; x.lineWidth = 3*d; x.beginPath(); x.moveTo(0,H*.7); x.lineTo(W,H*.25); x.stroke();
+    const path = () => { x.beginPath(); x.moveTo(P[0][0],P[0][1]); for(let i=1;i<n;i++) x.lineTo(P[i][0],P[i][1]); };
+    x.lineJoin = x.lineCap = "round"; x.shadowColor = color; x.shadowBlur = 16*d; x.strokeStyle = color; x.lineWidth = 4*d; path(); x.stroke();
+    x.shadowBlur = 0; x.setLineDash([6*d, 10*d]); x.lineDashOffset = -e*30*d; x.strokeStyle = "rgba(255,255,255,.75)"; x.lineWidth = 1.6*d; path(); x.stroke(); x.setLineDash([]);
+    const [hx,hy] = P[n-1], pr = (e*1.2) % 1;
+    x.fillStyle = color; x.globalAlpha = 1 - pr; x.beginPath(); x.arc(hx,hy,(6+pr*18)*d,0,7); x.fill(); x.globalAlpha = 1;
+    x.fillStyle = "#fff"; x.beginPath(); x.arc(hx,hy,5*d,0,7); x.fill();
+    if(!reduce) trailRaf = requestAnimationFrame(frame);
+  };
+  trailRaf = requestAnimationFrame(frame);
 }
 function openSheet(){
   if(!livePost) return; fillSheet(true); const sh = $("sheet"); sh.scrollTop = 0; sh.classList.add("open");
@@ -905,7 +997,7 @@ let landFlown = false;
 const views3d = {};
 function loop3d(id, fn){ const v = views3d[id]; if(v) v.fn = fn; }
 function tick3d(){ for(const [id,v] of Object.entries(views3d)){ if(!v.el.isConnected){ v.renderer.dispose(); delete views3d[id]; continue; }
-  if(document.hidden || tab !== "growth" && id !== "reveal") continue; v.fn && v.fn(performance.now()); } requestAnimationFrame(tick3d); }
+  if(document.hidden || (id === "globe" ? tab !== "world" : tab !== "growth" && id !== "reveal")) continue; v.fn && v.fn(performance.now()); } requestAnimationFrame(tick3d); }
 requestAnimationFrame(tick3d);
 async function makeView(id, host){
   const THREE = await getThree(), cv = host.querySelector("canvas") || host;
@@ -1022,10 +1114,167 @@ async function reveal(k, m){
 }
 $("reveal").onclick = () => { $("reveal").classList.remove("open"); setTimeout(() => { if(views3d.reveal){ views3d.reveal.renderer.dispose(); delete views3d.reveal; } }, 500); };
 
+/* ================= World: realistic audience globe ================= */
+const CC = Object.fromEntries("GB54,-2;IE53,-8;US39,-98;CA56,-106;AU-25,134;NZ-41,174;IN22,79;PK30,70;BD24,90;NG9,8;GH8,-1;KE0,38;ZA-29,24;EG27,30;MA32,-6;DZ28,3;TN34,9;SA24,45;AE24,54;QA25,51;KW29,48;TR39,35;FR46,2;DE51,10;NL52,5;BE50,4;ES40,-4;PT39,-8;IT42,12;CH47,8;AT47,14;PL52,19;SE62,15;NO61,8;DK56,10;FI64,26;RO46,25;GR39,22;CZ50,15;HU47,19;UA49,32;RU60,90;BR-10,-52;AR-34,-64;MX23,-102;CO4,-73;CL-30,-71;PE-9,-75;VE7,-66;JM18,-77;TT10,-61;PH12,122;ID-2,118;MY4,102;SG1.35,103.8;TH15,101;VN16,107;JP36,138;KR36,128;CN35,103;HK22.3,114.2;IL31,35;IQ33,44;IR32,53;LK7.8,80.7;NP28,84;ET9,39;UG1,32;TZ-6,35;ZW-19,30;CM6,12;SN14,-14;CI7.5,-5.5;JO31,36;LB33.8,35.8;RS44,21;HR45,16;BG43,25;SK48.7,19.7;LT55,24;LV57,25;EE59,26;IS65,-18;CY35,33;MT35.9,14.4;LU49.8,6.1;PR18.2,-66.5;DO19,-70.7;EC-1.8,-78;BO-16,-64;UY-33,-56;PY-23,-58;CR10,-84;PA9,-80;GT15.5,-90;SV13.8,-88.9;HN15,-86.5;ZM-14,28;AO-12,18;MZ-18,35;RW-2,30;SO6,46;SD15,30;LY27,17;OM21,57;BH26,50.5;AF34,66;KZ48,67;UZ41,64;AZ40,47;GE42,43.5;AM40,45;MM21,96;KH12.5,105;TW23.7,121;MN46,105;BA44,17.8;SI46,15;MK41.6,21.7;AL41,20;ME42.7,19.3;MD47,28.5;BY53.7,28".split(";").map(s => { const [, c, a, b] = s.match(/^([A-Z]{2})(-?[\d.]+),(-?[\d.]+)$/); return [c, [+a, +b]]; }));
+const regionName = (() => { try{ const dn = new Intl.DisplayNames(["en"], {type:"region"}); return c => dn.of(c) || c; }catch(e){ return c => c; } })();
+function places(){   // cities when Instagram gives them, plus countries not already covered by a city
+  const au = data && data.audience; if(!au) return [];
+  const out = (au.cities || []).map(([nm, v, lat, lon, cc]) => ({name: nm.split(",")[0], full: nm, v, lat, lon, cc, kind: "city"}));
+  for(const [cc, v] of au.countries || []) if(CC[cc]) out.push({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"});
+  return out;
+}
+function worldList(){
+  const el = $("wplaces"); if(!el || !data) return; const au = data.audience;
+  if(!au || !(au.countries||[]).length){ el.innerHTML = `<div class="empty">Your audience map appears after the next stats refresh (Instagram shares it a few times a day).</div>`; return; }
+  const top = au.countries.slice(0, 12), mx = top[0][1], tot = au.countries.reduce((s,[,v])=>s+v,0);
+  el.innerHTML = top.map(([cc, v]) => `<button class="place" data-cc="${cc}"><span class="nm">${esc(regionName(cc))}</span><span class="bar"><span style="width:${(v/mx*100).toFixed(1)}%"></span></span><b>${(v/tot*100).toFixed(v/tot < .01 ? 1 : 0)}%</b></button>`).join("");
+  el.querySelectorAll(".place").forEach(b => b.onclick = () => { window.scrollTo({top:0, behavior:"smooth"}); globeApi && globeApi.flyToCountry(b.dataset.cc); });
+  const ps = places(), now = new Date(), utcH = now.getUTCHours() + now.getUTCMinutes()/60;
+  const cities = ps.filter(p => p.kind === "city"), base = cities.length ? cities : ps.filter(p => p.kind === "country");
+  const sum = base.reduce((s,p)=>s+p.v,0), awake = base.filter(p => { const h = (utcH + p.lon/15 + 48) % 24; return h >= 8; }).reduce((s,p)=>s+p.v,0);
+  $("wawake").innerHTML = sum ? `<i></i>${Math.round(awake/sum*100)}% of your audience is awake now` : "";
+}
+function sunLatLon(date){   // where the sun is overhead right now
+  const N = Math.floor((date - Date.UTC(date.getUTCFullYear(),0,0))/864e5), B = 2*Math.PI*(N-81)/364;
+  const eot = 9.87*Math.sin(2*B) - 7.53*Math.cos(B) - 1.5*Math.sin(B), h = date.getUTCHours() + date.getUTCMinutes()/60 + date.getUTCSeconds()/3600;
+  return [23.44*Math.sin(2*Math.PI*(284+N)/365), -15*(h - 12 + eot/60)];
+}
+function moonLatLon(date, sunLon){
+  const d = (date - Date.UTC(2000,0,1,12))/864e5, M = (134.963 + 13.064993*d)*Math.PI/180;
+  const lam = (218.316 + 13.176396*d + 6.289*Math.sin(M)) % 360, Ls = (280.46 + .9856474*d) % 360;
+  return [23.44*Math.sin(lam*Math.PI/180), ((sunLon - (lam - Ls)) % 360 + 540) % 360 - 180];
+}
+let globeApi = null;
+async function globe(){
+  const host = $("world"); if(host._built) return; host._built = true;
+  try{
+  const {THREE, renderer, scene, camera, cv} = await makeView("globe", host);
+  camera.fov = 42; camera.near = .01; camera.far = 2000; camera.updateProjectionMatrix();
+  const TEX = "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r170/examples/textures/planets/";
+  const tl = new THREE.TextureLoader(); tl.crossOrigin = "anonymous";
+  const load = f => new Promise(r => tl.load(TEX + f, t => { t.anisotropy = 8; r(t); }, undefined, () => r(null)));
+  const [day, night, spec, clouds, moonT] = await Promise.all(["earth_atmos_2048.jpg","earth_lights_2048.png","earth_specular_2048.jpg","earth_clouds_1024.png","moon_1024.jpg"].map(load));
+  if(day) day.colorSpace = THREE.SRGBColorSpace; if(night) night.colorSpace = THREE.SRGBColorSpace;
+  $("wmsg").textContent = "";
+  const ll = (lat, lon, r = 1) => { const p = (90-lat)*Math.PI/180, t = (lon+180)*Math.PI/180; return new THREE.Vector3(-r*Math.sin(p)*Math.cos(t), r*Math.cos(p), r*Math.sin(p)*Math.sin(t)); };
+  const earth = new THREE.Group(); earth.rotation.z = 23.44*Math.PI/180; scene.add(earth);   // real axial tilt
+  const sunLocal = new THREE.Vector3(), sunWorld = new THREE.Vector3();
+  const mat = new THREE.ShaderMaterial({ uniforms: {day:{value:day}, night:{value:night}, spec:{value:spec}, sun:{value:sunWorld}, cam:{value:camera.position}},
+    vertexShader: `varying vec2 vUv;varying vec3 vN;varying vec3 vW;void main(){vUv=uv;vN=normalize(mat3(modelMatrix)*normal);vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+    fragmentShader: `uniform sampler2D day,night,spec;uniform vec3 sun,cam;varying vec2 vUv;varying vec3 vN;varying vec3 vW;
+      void main(){vec3 n=normalize(vN);float d=dot(n,normalize(sun));float k=smoothstep(-.16,.2,d);
+      vec3 dc=texture2D(day,vUv).rgb;vec3 nc=texture2D(night,vUv).rgb*vec3(1.,.82,.55)*1.8;
+      vec3 c=mix(nc,dc*(.18+.95*max(d,0.)),k);vec3 v=normalize(cam-vW);vec3 h=normalize(normalize(sun)+v);
+      c+=texture2D(spec,vUv).r*pow(max(dot(n,h),0.),38.)*.55*k*vec3(1.,.95,.85);
+      float f=pow(1.-max(dot(n,v),0.),3.);c+=vec3(.32,.6,1.)*f*(.15+.85*k);
+      c=mix(c,vec3(1.,.45,.2),smoothstep(.25,0.,abs(d))*.18*k);gl_FragColor=vec4(c,1.);
+      #include <colorspace_fragment>
+      }` });
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), mat); earth.add(sphere);
+  const cloud = new THREE.Mesh(new THREE.SphereGeometry(1.008, 64, 64), new THREE.MeshLambertMaterial({map: clouds, transparent: true, opacity: .55, depthWrite: false}));
+  if(clouds) earth.add(cloud);
+  const atmo = new THREE.Mesh(new THREE.SphereGeometry(1.075, 64, 64), new THREE.ShaderMaterial({ side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+    vertexShader: `varying vec3 vN;varying vec3 vV;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}`,
+    fragmentShader: `varying vec3 vN;varying vec3 vV;void main(){float i=pow(.72-dot(vN,vV),3.2);gl_FragColor=vec4(.35,.65,1.,1.)*i*1.6;}` }));
+  scene.add(atmo);
+  const sunLight = new THREE.DirectionalLight(0xffffff, 2.2); scene.add(sunLight, new THREE.AmbientLight(0x223355, .35));
+  // stars + moon
+  const sg = new THREE.BufferGeometry(), sp = []; for(let i=0;i<2600;i++){ const v = new THREE.Vector3().randomDirection().multiplyScalar(300+Math.random()*400); sp.push(v.x,v.y,v.z); }
+  sg.setAttribute("position", new THREE.Float32BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({color: 0xcfd8ff, size: 1.1, sizeAttenuation: false, transparent: true, opacity: .85})));
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(.27, 48, 48), new THREE.MeshStandardMaterial({map: moonT, roughness: 1, color: moonT ? 0xffffff : 0x999999})); earth.add(moon);
+  // glow sprite texture
+  const gc = document.createElement("canvas"); gc.width = gc.height = 64; const gx = gc.getContext("2d"), gr = gx.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,"rgba(255,255,255,1)"); gr.addColorStop(.25,"rgba(255,150,200,.9)"); gr.addColorStop(1,"rgba(255,80,160,0)"); gx.fillStyle = gr; gx.fillRect(0,0,64,64);
+  const glowT = new THREE.CanvasTexture(gc);
+  // audience towers
+  const ps = places(), mx = Math.max(1, ...ps.map(p => p.v)), markers = [];
+  ps.forEach((p, i) => {
+    const h = .02 + .3*Math.sqrt(p.v/mx), up = ll(p.lat, p.lon).normalize(), col = new THREE.Color().setHSL((330 + (1-p.v/mx)*50)/360 % 1, .95, .62);
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(.0035, .006, 1, 8, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: .85, blending: THREE.AdditiveBlending, depthWrite: false}));
+    beam.position.copy(up.clone().multiplyScalar(1 + h/2)); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), up); beam.scale.y = .001;
+    const tip = new THREE.Sprite(new THREE.SpriteMaterial({map: glowT, color: col, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true}));
+    tip.position.copy(up.clone().multiplyScalar(1 + h)); tip.scale.setScalar(.035 + .07*Math.sqrt(p.v/mx));
+    const base = new THREE.Sprite(new THREE.SpriteMaterial({map: glowT, color: col, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: .8}));
+    base.position.copy(up.clone().multiplyScalar(1.002)); base.scale.setScalar(.05 + .1*Math.sqrt(p.v/mx));
+    earth.add(beam, tip, base); markers.push({...p, beam, tip, h, up, grow: 0, delay: i*.04});
+  });
+  if(!ps.length) $("wmsg").textContent = "Your audience map appears after the next refresh";
+  // satellite
+  const sat = new THREE.Sprite(new THREE.SpriteMaterial({map: glowT, color: 0x9bf6ff, blending: THREE.AdditiveBlending, depthWrite: false})); sat.scale.setScalar(.05); earth.add(sat);
+  // camera: lat/lon/dist around the earth, flights arc up and back down
+  const home = ps.find(p => p.cc === "GB") || {lat: 51.5, lon: -.12, name: "London"};
+  const top = ps[0] || home;
+  let cam = {lat: top.lat - 8, lon: top.lon + 150, dist: 70}, fly = null, idleAt = 0, drag = null;
+  const pinch = new Map();
+  const flyTo = (lat, lon, dist = 2.1, dur = 2.4, then) => { fly = {from: {...cam}, to: {lat, lon, dist}, t0: performance.now(), dur: (reduce ? .01 : dur)*1000, then}; idleAt = performance.now(); };
+  const focus = (p, extra = "") => { const f = $("wfocus"); const tot = (data.audience.countries||[]).reduce((s,[,v])=>s+v,0) || 1;
+    f.innerHTML = `<small>${p.kind === "city" ? "City" : "Country"} · ${p.kind === "city" ? esc(regionName(p.cc||"")) : "Instagram followers"}</small><b>${esc(p.name)}</b><span class="big num" id="wfnum"></span> <small>followers · ${(p.v/tot*100).toFixed(1)}% of your audience${extra}</small>`;
+    f.classList.add("on"); roll($("wfnum"), p.v, full, "#ec4899"); const m = markers.find(x => x.name === p.name && x.kind === p.kind); if(m) m.grow = 0; };
+  const flyPlace = p => { flyTo(p.lat, p.lon, p.kind === "city" ? 1.55 : 2.0, 2.6); focus(p); };
+  // light arcs from home to audience countries
+  const arcs = [];
+  const arc = (a, b, color) => { const A = ll(a.lat, a.lon), B = ll(b.lat, b.lon), ang = A.angleTo(B), pts = [];
+    for(let i=0;i<=64;i++){ const t = i/64, v = A.clone().lerp(B, t).normalize().multiplyScalar(1 + Math.sin(Math.PI*t)*ang*.22); pts.push(v); }
+    const g = new THREE.BufferGeometry().setFromPoints(pts), m = new THREE.Line(g, new THREE.LineBasicMaterial({color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false}));
+    g.setDrawRange(0, 0); earth.add(m); arcs.push({m, g, t0: performance.now()}); };
+  const shootArcs = n => { const cs = ps.filter(p => p.kind === "country" && p.cc !== home.cc).slice(0, 12); for(let i=0;i<Math.min(n, cs.length);i++){ const p = cs[Math.floor(Math.random()*Math.min(cs.length, 8))]; setTimeout(() => arc(home, p, new THREE.Color().setHSL(.9 + Math.random()*.15, 1, .65)), i*220); } };
+  // gestures: drag to rotate, pinch / wheel to zoom, double-tap to dive
+  let lastTap = 0;
+  cv.onpointerdown = e => { pinch.set(e.pointerId, {x: e.clientX, y: e.clientY}); cv.setPointerCapture(e.pointerId); fly = null; idleAt = performance.now();
+    if(pinch.size === 1) drag = {x: e.clientX, y: e.clientY, lat: cam.lat, lon: cam.lon, moved: false};
+    if(pinch.size === 2){ const [p1,p2] = [...pinch.values()]; drag = {pd: Math.hypot(p1.x-p2.x, p1.y-p2.y), dist: cam.dist}; } };
+  cv.onpointermove = e => { if(!pinch.has(e.pointerId)) return; pinch.set(e.pointerId, {x: e.clientX, y: e.clientY}); idleAt = performance.now(); if(!drag) return;
+    if(pinch.size === 2 && drag.pd){ const [p1,p2] = [...pinch.values()]; cam.dist = clamp(drag.dist * drag.pd / Math.max(1, Math.hypot(p1.x-p2.x, p1.y-p2.y)), 1.12, 14); return; }
+    const k = .18*(cam.dist - .95); if(Math.abs(e.clientX-drag.x) + Math.abs(e.clientY-drag.y) > 4) drag.moved = true;
+    cam.lon = drag.lon - (e.clientX - drag.x)*k; cam.lat = clamp(drag.lat + (e.clientY - drag.y)*k, -82, 82); };
+  cv.onpointerup = cv.onpointercancel = e => { pinch.delete(e.pointerId); const wasDrag = drag && drag.moved; if(pinch.size === 0) drag = null;
+    if(wasDrag || e.type === "pointercancel") return; const now = performance.now();
+    if(now - lastTap < 320){ const r = cv.getBoundingClientRect(), ray = new THREE.Raycaster(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1, -((e.clientY-r.top)/r.height)*2+1), camera);
+      const hit = ray.intersectObject(sphere)[0]; if(hit){ const v = earth.worldToLocal(hit.point.clone()).normalize(), lat = 90 - Math.acos(v.y)*180/Math.PI, lon = ((Math.atan2(v.z, -v.x)*180/Math.PI - 180) + 540) % 360 - 180;
+        const near = ps.map(p => ({p, d: ll(p.lat,p.lon).angleTo(v)})).sort((a,b) => a.d-b.d)[0];
+        if(near && near.d < .26) flyPlace(near.p); else { flyTo(lat, lon, 1.6, 2); $("wfocus").classList.remove("on"); } } }
+    lastTap = now; };
+  cv.addEventListener("wheel", e => { e.preventDefault(); cam.dist = clamp(cam.dist * (1 + e.deltaY*.0012), 1.12, 14); idleAt = performance.now(); }, {passive: false});
+  $("whome").onclick = () => { flyTo(home.lat, home.lon, 1.7, 2.6); const h = ps.find(p => p.name === home.name); if(h) focus(h); };
+  $("wsearch").onsubmit = async ev => { ev.preventDefault(); const q = ev.target.querySelector("input").value.trim().toLowerCase(); if(!q) return; ev.target.querySelector("input").blur();
+    const hit = ps.find(p => p.name.toLowerCase() === q) || ps.find(p => p.full.toLowerCase().includes(q)); if(hit) return flyPlace(hit);
+    try{ const r = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + new URLSearchParams({name: q, count: 1, language: "en", format: "json"}))).json(), g = (r.results||[])[0];
+      if(!g) return; const c = ps.find(p => p.kind === "country" && p.cc === g.country_code);
+      flyTo(g.latitude, g.longitude, 1.55, 2.6); focus({name: g.name, kind: c ? "country" : "city", cc: g.country_code, v: c ? c.v : 0}, c ? ` (in ${esc(c.name)})` : " — no followers listed here yet"); }catch(e){} };
+  globeApi = { arcs: shootArcs, flyToCountry: cc => { const p = ps.find(x => x.kind === "country" && x.cc === cc); if(p) flyPlace(p); } };
+  // intro: zoom in from deep space, then fly to the top city
+  flyTo(top.lat, top.lon, 2.3, 3.4, () => { if(ps.length){ focus(top); setTimeout(() => shootArcs(6), 600); } });
+  const blink = $("wblink"), blinked = {}; const t0 = performance.now();
+  loop3d("globe", now => {
+    const date = new Date(), [sl, so] = sunLatLon(date), [ml, mo] = moonLatLon(date, so);
+    sunLocal.copy(ll(sl, so)); sunWorld.copy(sunLocal).applyQuaternion(earth.quaternion).normalize(); sunLight.position.copy(sunWorld).multiplyScalar(10);
+    moon.position.copy(ll(ml, mo, 9)); cloud.rotation.y += .00012;
+    if(fly){ const p = clamp((now - fly.t0)/fly.dur, 0, 1), e = ease(p), A = ll(fly.from.lat, fly.from.lon), B = ll(fly.to.lat, fly.to.lon), ang = A.angleTo(B);
+      const v = A.lerp(B, e).normalize(); cam.lat = 90 - Math.acos(clamp(v.y,-1,1))*180/Math.PI; cam.lon = ((Math.atan2(v.z, -v.x)*180/Math.PI - 180) + 540) % 360 - 180;
+      cam.dist = fly.from.dist + (fly.to.dist - fly.from.dist)*e + Math.sin(Math.PI*p)*ang*.9; if(p >= 1){ const t = fly.then; fly = null; t && t(); } }
+    else if(now - idleAt > 7000 && !drag) cam.lon += .012;
+    camera.position.copy(earth.localToWorld(ll(cam.lat, cam.lon, cam.dist))); camera.up.set(0,1,0).applyQuaternion(earth.quaternion); camera.lookAt(0,0,0);
+    const s = (now - t0)/1000;
+    markers.forEach(m => { m.grow = Math.min(1, m.grow + .02); const g = ease(clamp((s - 2.6 - m.delay)/1.2, 0, 1)) * (.85 + .15*m.grow);
+      m.beam.scale.y = Math.max(.001, m.h*g); m.beam.position.copy(m.up).multiplyScalar(1 + m.h*g/2); m.tip.position.copy(m.up).multiplyScalar(1 + m.h*g); m.tip.material.opacity = .6 + .4*Math.sin(now/500 + m.delay*20); });
+    for(let i = arcs.length-1; i >= 0; i--){ const a = arcs[i], t = (now - a.t0)/1000; a.g.setDrawRange(0, Math.floor(65*Math.min(1, t/1.1))); a.m.material.opacity = t < 1.4 ? 1 : Math.max(0, 1 - (t-1.4)/.9);
+      if(t > 2.4){ earth.remove(a.m); a.g.dispose(); arcs.splice(i, 1); } }
+    // satellite on an inclined orbit; flashes a city's number as it passes over
+    const w = now/42000*Math.PI*2, inc = 51.6*Math.PI/180, slat = Math.asin(Math.sin(inc)*Math.sin(w))*180/Math.PI, slon = ((Math.atan2(Math.cos(inc)*Math.sin(w), Math.cos(w))*180/Math.PI - now/400) % 360 + 540) % 360 - 180;
+    sat.position.copy(ll(slat, slon, 1.22));
+    const under = markers.find(m => m.kind === "city" && Math.abs(m.lat - slat) < 5 && Math.abs(((m.lon - slon + 540) % 360) - 180) < 6 && !(now - (blinked[m.name]||0) < 20000));
+    if(under){ blinked[under.name] = now; const sc = earth.localToWorld(under.up.clone().multiplyScalar(1 + under.h)).project(camera);
+      if(sc.z < 1){ const r = cv.getBoundingClientRect(); blink.style.left = (sc.x+1)/2*r.width + "px"; blink.style.top = (1-sc.y)/2*r.height + "px"; blink.textContent = `${under.name} · ${fmt(under.v)}`; blink.classList.add("on"); setTimeout(() => blink.classList.remove("on"), 1800); } }
+    const sz = [cv.clientWidth, cv.clientHeight]; if(cv.width !== Math.round(sz[0]*renderer.getPixelRatio())){ renderer.setSize(sz[0], sz[1], false); camera.aspect = sz[0]/sz[1]; camera.updateProjectionMatrix(); }
+    renderer.render(scene, camera);
+  });
+  }catch(err){ $("wmsg").textContent = "The globe needs a connection to load"; host._built = false; }
+}
+
 /* ================= tabs, swipe, lock, boot ================= */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.tab));
 let sx = 0, sy = 0, st = 0;
-$("main").addEventListener("touchstart", e => { if(e.target.closest(".chart,.chips,.top10,.stage3d,.wcard")){ st = 0; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); }, {passive:true});
+$("main").addEventListener("touchstart", e => { if(e.target.closest(".chart,.chips,.top10,.stage3d,.wcard,.world")){ st = 0; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); }, {passive:true});
 $("main").addEventListener("touchend", e => { if(!st) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
   if(Date.now() - st < 600 && Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy)*1.8){ const i = TABS.indexOf(tab) + (dx < 0 ? 1 : -1); if(i >= 0 && i < TABS.length) go(TABS[i]); } }, {passive:true});
 
@@ -1039,11 +1288,29 @@ $("ref").onclick = load;
 document.addEventListener("visibilitychange", () => { if(!document.hidden && pass) load(); });
 setInterval(() => { if(!document.hidden && pass) load(); }, 60000);
 
-function sting(){
+function sting(){   // "W" drawn in light, then split into hundreds of strands streaming at the camera
   let seen = false; try{ seen = sessionStorage.getItem("stung") === "1"; sessionStorage.setItem("stung","1"); }catch(e){}
-  if(seen || reduce) return;
-  const s = $("sting"); s.classList.remove("hide"); requestAnimationFrame(() => s.classList.add("go"));
-  const done = () => s.remove(); setTimeout(done, 1250); s.onclick = done;
+  const s = $("sting"); if(seen || reduce){ s.remove(); return; }
+  s.classList.remove("hide"); const cv = s.querySelector("canvas"), x = cv.getContext("2d"), d = Math.min(2, devicePixelRatio||1);
+  const W = cv.width = innerWidth*d, H = cv.height = innerHeight*d, cx = W/2, cy = H*.46, sc = Math.min(W, H)*.0042;
+  const P = [[18,36],[38,86],[60,46],[82,86],[102,36]].map(([a,b]) => [cx + (a-60)*sc, cy + (b-61)*sc]);
+  const seg = []; let L = 0; for(let i=1;i<P.length;i++){ const l = Math.hypot(P[i][0]-P[i-1][0], P[i][1]-P[i-1][1]); seg.push([P[i-1],P[i],L,l]); L += l; }
+  const at = t => { const dd = t*L; for(const [a,b,s0,l] of seg) if(dd <= s0+l){ const f = (dd-s0)/l; return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]; } return P[P.length-1]; };
+  const hue = t => `hsl(${265 + t*110},95%,${62+10*Math.sin(t*9)}%)`;
+  const N = 420, strands = Array.from({length:N}, (_,i) => { const t = i/(N-1), [px,py] = at(t); return {t, x:px+(Math.random()-.5)*6*d, y:py+(Math.random()-.5)*6*d, z:1, v:.55+Math.random()*.9, lx:null, ly:null}; });
+  const t0 = performance.now(); let raf;
+  const frame = now => {
+    const e = (now - t0)/1000; x.globalCompositeOperation = "source-over"; x.fillStyle = "rgba(0,0,0,.22)"; x.fillRect(0,0,W,H);
+    x.globalCompositeOperation = "lighter"; x.lineCap = "round";
+    if(e < .5){ const k = 1 - Math.pow(1 - e/.5, 3); x.lineWidth = 7*d; for(let i=1;i<=60*k;i++){ const a = at((i-1)/60), b = at(i/60); x.strokeStyle = hue(i/60); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); } }
+    else for(const p of strands){ p.z = Math.max(.04, p.z - .016*p.v*(1 + (e-.5)*5)); const sx = cx + (p.x-cx)/p.z, sy = cy + (p.y-cy)/p.z;
+      if(p.lx != null){ x.strokeStyle = hue(p.t); x.globalAlpha = Math.max(0, 1-(e-.5)/.95); x.lineWidth = Math.min(10*d, 1.4*d/p.z); x.beginPath(); x.moveTo(p.lx,p.ly); x.lineTo(sx,sy); x.stroke(); }
+      p.lx = sx; p.ly = sy; }
+    x.globalAlpha = 1;
+    if(e > 1.05) s.classList.add("fade");
+    if(e < 1.6) raf = requestAnimationFrame(frame); else s.remove();
+  };
+  raf = requestAnimationFrame(frame); s.onclick = () => { cancelAnimationFrame(raf); s.remove(); };
 }
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js").catch(() => {});
