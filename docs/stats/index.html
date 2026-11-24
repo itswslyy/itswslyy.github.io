@@ -428,6 +428,62 @@ nav,.iconbtn,#mini{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(
 #standby .sbrow{display:flex;gap:22px;margin-top:16px;font-size:14px;color:#ff8a7a;opacity:.8}
 #standby .sbrow i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
 
+/* ---------- Home: lock-screen portrait, right-now strip, Stocks rows ---------- */
+.portrait{position:relative;height:340px;margin:0 -16px 14px;overflow:hidden;display:flex;align-items:flex-end}
+.pimg{position:absolute;left:0;right:0;top:-20px;width:100%;height:120%;object-fit:cover;filter:blur(1.5px) saturate(1.15) brightness(.85);transform:translateY(var(--py,0)) scale(1.04);will-change:transform;
+  -webkit-mask:linear-gradient(#000 45%,transparent 98%);mask:linear-gradient(#000 45%,transparent 98%)}
+.pshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,11,.15),rgba(5,6,11,.05) 35%,rgba(5,6,11,.75) 80%,var(--bg))}
+.pin{position:relative;z-index:1;width:100%;padding:0 20px 14px;text-align:left}
+.pin .depthnum{justify-content:flex-start;font-size:clamp(64px,22vw,108px);margin:2px 0 8px;transform:translateY(var(--ny,0))}
+.psum{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.psum span{font-size:14px;color:#dde1ee}
+.now{display:flex;align-items:stretch;gap:0;padding:14px 4px 12px;margin:22px 0 12px;position:relative;overflow:visible!important}
+.now .ncell small{white-space:normal;line-height:1.25}
+.nlive{position:absolute;top:-9px;left:14px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#0f1220;border:1px solid var(--stroke2);border-radius:8px;padding:2px 7px;display:flex;align-items:center;gap:5px}
+.nlive i{width:6px;height:6px;border-radius:50%;background:#35e08f;animation:ping 1.6s infinite}
+.ncell{flex:1;min-width:0;padding:4px 12px;border-left:1px solid var(--stroke)}
+.ncell:first-of-type{border-left:0}
+.ncell b{display:block;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.ncell small{display:block;font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ncell.hot b{color:#ff9f0a}
+.now .sweep{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.12) 50%,transparent 70%);transform:translateX(-100%);animation:sweep 1.4s .3s var(--out) both}
+@keyframes sweep{to{transform:translateX(100%)}}
+.rows{margin-bottom:14px}
+.arow2{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-top:1px solid var(--stroke);text-align:left;transition:background .2s}
+.arow2:first-child{border-top:0}
+.arow2:active{background:rgba(255,255,255,.04)}
+.rlogo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none}
+.rlogo svg{width:18px;height:18px;fill:#fff}
+.rname{flex:1;min-width:0}
+.rname b{display:block;font-size:15px}
+.rname small{display:block;font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rspark{width:64px;height:26px;flex:none;fill:none;stroke-width:1.8;vector-effect:non-scaling-stroke}
+.rspark path{vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.rnum{text-align:right;flex:none;min-width:70px}
+.rnum b{display:block;font-size:16px}
+.rnum small{font-size:12px;color:var(--mute)}
+.rnum small.up{color:var(--up)}.rnum small.down{color:var(--down)}
+/* ---------- Growth: rewind chart ---------- */
+.rw{position:relative;margin:0 -16px;padding:4px 16px 8px;--tint:150,160,190;background:radial-gradient(120% 70% at 50% 0%,rgba(var(--tint),.16),transparent 70%);transition:background .5s}
+.rwhead small{font-size:12px;color:var(--dim)}
+.rwnum{display:flex;font-size:clamp(46px,15vw,72px);font-weight:800;letter-spacing:-.05em;line-height:1.05;margin:2px 0 4px}
+.rwchg{font-size:14px;color:var(--dim)}
+.rwchg span{font-weight:700}.rwchg .up{color:var(--up)}.rwchg .down{color:var(--down)}
+.rwwhen{display:block;margin-top:4px;color:var(--mute)!important}
+.rwchart{position:relative;height:220px;margin:14px -16px 6px;touch-action:none;color:#a0a8c0;transition:color .4s}
+.rwchart svg{width:100%;height:100%;display:block;overflow:visible}
+.rwchart.empty svg{opacity:.2}
+.rwcur{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.35);opacity:0;pointer-events:none;transition:opacity .2s}
+.rwcur i{position:absolute;left:-7px;top:var(--y);width:14px;height:14px;margin-top:-7px;border-radius:50%;background:currentColor;border:3px solid var(--bg);box-shadow:0 0 14px currentColor}
+.rwcur.on{opacity:1}
+.rwseg{display:flex;gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--stroke)}
+.rwseg button{flex:1;padding:8px 0;border-radius:10px;font-size:13px;font-weight:700;color:var(--dim);transition:all .3s var(--ease)}
+.rwseg button.on{background:rgba(255,255,255,.12);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+/* calmer, cleaner overall */
+#field.on{opacity:.75}
+.rv{transform:translateY(12px) scale(.99)}
+.glass::before{opacity:.6}
+
 /* ---------- arriving (route) ---------- */
 .arrive{padding:16px}
 .arrive .eta{font-size:13px;color:var(--dim)}
@@ -745,14 +801,14 @@ function homePage(){
   const rings = ks.slice(0,5).map((k,i) => `<div class="ring r${i+1}" style="color:${C(k)}"><i class="sat"></i></div>`).join("");
   const av = ig.avatar || (A.youtube||{}).avatar;
   return `
-  ${liveCardHTML()}
-  <div class="glass hero rv" style="--i:0">
-    <div class="lab depthlab">Total followers</div>
-    <div class="depthnum num chrome" id="htotal"></div>
-    <div class="avatar3d" id="av3d"><div class="rings">${rings}</div>
-      <div class="orbglass">${av ? `<img src="${esc(av)}" alt="" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=mono>W</div>'">` : `<div class="mono">W</div>`}</div></div>
-    <div class="total">${deltaChip(total, totalPast)}</div>
+  <div class="portrait rv" style="--i:0">
+    ${av ? `<img class="pimg" id="pimg" src="${esc(av)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}<div class="pshade"></div>
+    <div class="pin"><div class="depthlab">Total followers</div><div class="depthnum num chrome" id="htotal"></div>
+      <div class="psum">${deltaChip(total, totalPast)}<span>${esc(summaryLine())}</span></div></div>
   </div>
+  ${nowStripHTML()}
+  <div class="glass rows rv" style="--i:1">${accountRowsHTML()}</div>
+  ${liveCardHTML()}
   <div class="sec rv" style="--i:1"><h2>Today</h2><small>goals adapt to your average</small></div>
   <div class="glass rings3 rv" style="--i:2">${ringsSVG()}</div>
   <div class="sec rv" style="--i:3"><h2>Next stop</h2><small>at your current pace</small></div>
@@ -813,6 +869,31 @@ function ringsSVG(){
   }).join("");
   const leg = R.map((x,i) => `<div><i style="background:${x.c1}"></i>${x.lab}<b><span class="rcnt" data-key="rc${i}" data-v="${x.val}" data-f="${x.f===fmt?"s":"f"}"></span> <small>/ ${x.f(x.goal)}</small></b></div>`).join("");
   return `<div class="arings" id="arings" data-over="${R.map(x=>x.p>=1?1:0).join("")}"><svg viewBox="0 0 100 100">${arcs}</svg></div><div class="rleg">${leg}</div>`;
+}
+/* plain-English summary, "right now" strip, Stocks-style account rows */
+function summaryLine(){
+  const g = Object.entries((data.today||{}).gain || {}).sort((a,b) => b[1]-a[1])[0], avg = goals().gf, tot = todayVals().followers;
+  if(!g || !g[1]) return "Quiet so far today";
+  const pace = tot >= avg*1.15 ? "ahead of your usual pace" : tot >= avg*.85 ? "on your usual pace" : "a bit behind your usual pace";
+  return `${META[g[0]] ? META[g[0]].label : g[0]} leads today, ${pace}`;
+}
+function nowStripHTML(){
+  const H = data.postHist || {}; let v15 = 0;
+  for(const h of Object.values(H)){ const p = h.pts; if(p.length < 2) continue; const last = p[p.length-1], prev = [...p].reverse().find(x => x[0] <= last[0]-900) || p[0]; v15 += Math.max(0, last[1]-prev[1]); }
+  const tot = s => Object.values(s).reduce((a,v)=>a+(v.f||0),0), hs = data.history, last = hs[hs.length-1], hr = [...hs].reverse().find(x => x[0] <= data.updated-3600);
+  const f1 = last && hr ? tot(last[1]) - tot(hr[1]) : null;
+  const hot = allPosts().map(p => ({p, v: velocity(p)})).filter(x => x.v > 0).sort((a,b) => b.v-a.v)[0];
+  return `<div class="glass now rv" style="--i:1"><div class="nlive"><i></i>Right now</div>
+    <div class="ncell"><b class="num roll" data-key="n15" data-v="${v15}"></b><small>views · last 15 min</small></div>
+    <div class="ncell"><b class="num roll" data-key="n1h" data-v="${f1 ?? ""}"></b><small>followers · last hour</small></div>
+    ${hot ? `<div class="ncell hot"><b>${fmt(hot.v)}/h</b><small>${esc((hot.p.title||"top post").slice(0,22))}</small></div>` : ""}<span class="sweep"></span></div>`;
+}
+function accountRowsHTML(){
+  return keys().map(k => { const a = data.accounts[k], s = series(k, data.updated - 86400), ch = (data.today||{}).gain?.[k] ?? (s.length > 1 ? s[s.length-1][1]-s[0][1] : null);
+    let sp = ""; if(s.length > 1){ const ys = s.map(p=>p[1]), x0 = s[0][0], x1 = s[s.length-1][0], y0 = Math.min(...ys), y1 = Math.max(...ys);
+      sp = `<svg class="rspark" viewBox="0 0 80 28" preserveAspectRatio="none"><path d="${s.map((p,i)=>(i?"L":"M")+((p[0]-x0)/(x1-x0||1)*80).toFixed(1)+","+(y1===y0?14:26-(p[1]-y0)/(y1-y0)*24).toFixed(1)).join("")}" stroke="${ch>0?"#35e08f":ch<0?"#ff6b7a":"#8b93a8"}"/></svg>`; }
+    return `<button class="arow2" data-acct="${k}"><span class="rlogo" style="background:${G(k)}">${ICON[k]}</span><span class="rname"><b>${META[k].label}</b><small>${esc(a.name||"")}</small></span>${sp}
+      <span class="rnum"><b class="num">${fmt(a.followers)}</b><small class="${ch>0?"up":ch<0?"down":""}">${ch==null?"–":(ch>0?"+":"")+fmt(ch)} today</small></span></button>`; }).join("");
 }
 /* live-activity card (top of Home): newest post live + countdown to the autopilot's next post */
 function liveCardHTML(){
@@ -927,12 +1008,59 @@ function growthPage(){
     return `<div class="glass gcard rv" style="--i:${i+4};--g:${G(k)}"><div class="ghead"><div class="dot">${ICON[k]}</div><b>${META[k].label}</b>
       <div class="ch"><strong style="color:${ch>0?"var(--up)":ch<0?"var(--down)":"var(--text)"}">${ch==null?"–":(ch>0?"+":"")+fmt(ch)}</strong>followers · ${range==="all"?"all time":range}</div></div>
       ${s.length > 1 ? `<div class="chart" data-k="${k}" data-since="${since}">${areaSVG(k, s)}<div class="xhair"></div><div class="xdot" style="background:${C(k)}"></div><div class="tip"></div></div>` : `<div class="collect">Collecting data — the chart fills in as stats refresh</div>`}</div>`; }).join("");
-  return `<div class="sec rv" style="--i:0;margin-top:4px"><h2>Your month in 3D</h2><small>drag to look around</small></div>
-  <div class="glass stage3d rv" style="--i:1" id="land"><div class="loading">Loading 3D…</div><canvas></canvas><div class="lbl">${ks.map(k=>`<span><i style="background:${C(k)}"></i>${META[k].label}</span>`).join("")}</div></div>
+  return `<div class="rw rv" style="--i:0" id="rw">
+    <div class="rwhead"><small id="rwlab">All accounts · followers</small><div class="rwnum num chrome" id="rwnum"></div><div id="rwchg" class="rwchg"></div><small id="rwwhen" class="rwwhen">Now · drag the chart to rewind</small></div>
+    <div class="rwchart" id="rwchart"><svg viewBox="0 0 400 200" preserveAspectRatio="none"><defs><linearGradient id="rwg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".35"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>
+      <path id="rwarea" fill="url(#rwg)"/><path id="rwline" fill="none" stroke="currentColor" stroke-width="2.4" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
+      <div class="rwcur" id="rwcur"><i></i></div></div>
+    <div class="rwseg" id="rwrange">${["1D","1W","1M","All"].map(r => `<button data-rr="${r}" class="${rwRange===r?"on":""}">${r}</button>`).join("")}</div>
+    <div class="chips" id="rwacct" style="margin-top:10px"><button class="fchip ${rwAcct==="all"?"on":""}" data-ra="all">All</button>${ks.map(k => `<button class="fchip ${rwAcct===k?"on":""}" data-ra="${k}"><i style="background:${C(k)}"></i>${META[k].label}</button>`).join("")}</div>
+  </div>
   <div class="sec rv" style="--i:2"><h2>Trophy shelf</h2><small>tap a medal</small></div>
   <div class="glass stage3d shelf rv" style="--i:3" id="shelf"><div class="loading">Loading trophies…</div><canvas></canvas></div>
   <div class="chips rv" style="--i:4;margin-top:22px">${["24h","7d","30d","all"].map(r => `<button class="fchip ${range===r?"on":""}" data-r="${r}">${r==="all"?"All time":r}</button>`).join("")}</div>
   <div style="margin-top:10px">${charts}</div>`;
+}
+/* Robinhood-style rewind chart: drag to scrub, number rewinds, screen tints with the trend, ranges morph */
+let rwRange = store.get("stats_rw") || "1W", rwAcct = store.get("stats_rwa") || "all", rwPts = null, rwAnim = 0;
+function rwSeries(){
+  const secs = {"1D":86400,"1W":7*86400,"1M":30*86400,"All":1e12}[rwRange], since = data.updated - secs;
+  if(rwAcct !== "all") return series(rwAcct, since);
+  const ks = keys(); return data.history.filter(h => h[0] >= since).map(h => [h[0], ks.reduce((s,k) => s + ((h[1][k]||{}).f || 0), 0)]).filter(p => p[1] > 0);
+}
+function resample(s, n = 120){ if(s.length < 2) return null; const t0 = s[0][0], t1 = s[s.length-1][0], out = []; let j = 0;
+  for(let i=0;i<n;i++){ const t = t0 + (t1-t0)*i/(n-1); while(j < s.length-2 && s[j+1][0] < t) j++; const a = s[j], b = s[j+1], f = (t-a[0])/((b[0]-a[0])||1); out.push([t, a[1] + (b[1]-a[1])*clamp(f,0,1)]); } return out; }
+function rwDraw(pts){
+  const ys = pts.map(p=>p[1]); let y0 = Math.min(...ys), y1 = Math.max(...ys); if(y1 === y0){ y0 -= 1; y1 += 1; } const pad = (y1-y0)*.15;
+  const X = i => i/(pts.length-1)*400, Y = v => 190 - (v-(y0-pad))/((y1+pad)-(y0-pad))*180;
+  const d = pts.map((p,i) => (i?"L":"M")+X(i).toFixed(1)+","+Y(p[1]).toFixed(1)).join("");
+  $("rwline").setAttribute("d", d); $("rwarea").setAttribute("d", d + "L400,200L0,200Z"); return {X, Y};
+}
+function rwSet(i){   // show the value at point i (or "now")
+  const p = rwPts, at = p[i], first = p[0][1], chg = at[1] - first, up = chg >= 0, rw = $("rw");
+  roll($("rwnum"), Math.round(at[1]), full, up ? "#35e08f" : "#ff6b7a");
+  $("rwchg").innerHTML = `<span class="${chg>0?"up":chg<0?"down":""}">${chg>0?"▲ +":chg<0?"▼ ":""}${full(Math.round(chg))} (${(first ? chg/first*100 : 0).toFixed(2)}%)</span> ${rwRange === "All" ? "all time" : "past " + {"1D":"day","1W":"week","1M":"month"}[rwRange]}`;
+  rw.style.setProperty("--tint", chg > 0 ? "53,224,143" : chg < 0 ? "255,107,122" : "150,160,190"); $("rwchart").style.color = chg > 0 ? "#35e08f" : chg < 0 ? "#ff6b7a" : "#a0a8c0";
+  return at;
+}
+function rewind(first){
+  if(!$("rw")) return; const s = resample(rwSeries());
+  $("rwlab").textContent = (rwAcct === "all" ? "All accounts" : META[rwAcct].label) + " · followers";
+  if(!s){ $("rwchart").classList.add("empty"); $("rwnum").textContent = full(rwAcct === "all" ? totalF() : data.accounts[rwAcct].followers); $("rwchg").textContent = "Building history — check back soon"; return; }
+  $("rwchart").classList.remove("empty");
+  const from = rwPts && !first ? rwPts.map(p => p[1]) : null; rwPts = s; cancelAnimationFrame(rwAnim);
+  if(from && !reduce){ const t0 = performance.now(), mn = Math.min(...s.map(p=>p[1])), to = s.map(p=>p[1]);   // morph the line between ranges
+    const step = now => { const k = ease(Math.min(1,(now-t0)/650)); rwDraw(s.map((p,i) => [p[0], from[i] + (to[i]-from[i])*k])); if(k < 1) rwAnim = requestAnimationFrame(step); }; rwAnim = requestAnimationFrame(step); }
+  else rwDraw(s);
+  rwSet(s.length-1); $("rwwhen").textContent = "Now · drag the chart to rewind";
+  const ch = $("rwchart"), cur = $("rwcur");
+  const move = e => { const r = ch.getBoundingClientRect(), i = Math.round(clamp((e.clientX - r.left)/r.width, 0, 1)*(rwPts.length-1)), at = rwSet(i), g = rwDraw(rwPts);
+    cur.style.left = (g.X(i)/400*100) + "%"; cur.style.setProperty("--y", (g.Y(at[1])/200*100) + "%"); cur.classList.add("on");
+    $("rwwhen").textContent = new Date(at[0]*1000).toLocaleString("en-GB", {weekday:"short", day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"}); };
+  const end = () => { cur.classList.remove("on"); rwSet(rwPts.length-1); $("rwwhen").textContent = "Now · drag the chart to rewind"; };
+  ch.onpointerdown = e => { ch.setPointerCapture(e.pointerId); move(e); }; ch.onpointermove = e => { if(e.buttons || e.pointerType === "touch") move(e); }; ch.onpointerup = ch.onpointercancel = end;
+  document.querySelectorAll("[data-rr]").forEach(b => b.onclick = () => { rwRange = b.dataset.rr; store.set("stats_rw", rwRange); document.querySelectorAll("[data-rr]").forEach(x => x.classList.toggle("on", x === b)); rewind(); });
+  document.querySelectorAll("[data-ra]").forEach(b => b.onclick = () => { rwAcct = b.dataset.ra; store.set("stats_rwa", rwAcct); document.querySelectorAll("[data-ra]").forEach(x => x.classList.toggle("on", x === b)); rewind(); });
 }
 function areaSVG(k, s, color = C(k)){
   const W = 320, H = 110, xs = s.map(p=>p[0]), ys = s.map(p=>p[1]);
@@ -1000,7 +1128,9 @@ function animatePage(id){
     const ar = page.querySelector("#arings"); if(ar && !reduce) setTimeout(() => sparks(ar), 1500);
   }));
   if(id === "accounts") layoutWallet();
-  if(id === "growth") setTimeout(() => { land(); shelf(); }, 380);
+  if(id === "growth"){ rewind(true); setTimeout(shelf, 380); }
+  if(id === "home"){ page.querySelectorAll(".now .roll").forEach(el => roll(el, el.dataset.v === "" ? null : +el.dataset.v, full));
+    page.querySelectorAll("[data-acct]").forEach(b => b.onclick = () => { walletSel = b.dataset.acct; go("accounts"); }); }
   if(id === "world") setTimeout(globe, 250);
 }
 function sparks(ar){
@@ -1550,7 +1680,9 @@ document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.data
 $("opensky").onclick = openSky; $("skyclose").onclick = () => $("sky").classList.remove("open");
 $("standby").onclick = () => $("standby").classList.remove("on");
 let sx = 0, sy = 0, st = 0;
-$("main").addEventListener("touchstart", e => { if(e.target.closest(".chart,.chips,.top10,.stage3d,.wcard,.world")){ st = 0; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); }, {passive:true});
+addEventListener("scroll", () => { if(tab !== "home" || reduce) return; const y = scrollY, im = $("pimg"), n = $("htotal");   // portrait parallax: photo drifts slower than the number
+  if(im) im.style.setProperty("--py", (y*.45) + "px"); if(n) n.style.setProperty("--ny", (-y*.08) + "px"); }, {passive: true});
+$("main").addEventListener("touchstart", e => { if(e.target.closest(".chart,.chips,.top10,.stage3d,.wcard,.world,.rwchart")){ st = 0; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); }, {passive:true});
 $("main").addEventListener("touchend", e => { if(!st) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
   if(Date.now() - st < 600 && Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy)*1.8){ const i = TABS.indexOf(tab) + (dx < 0 ? 1 : -1); if(i >= 0 && i < TABS.length) go(TABS[i]); } }, {passive:true});
 
