@@ -338,6 +338,96 @@ body.settled .chart .area{animation:none;opacity:1}
 .place .bar{flex:1.2;height:6px;margin:0;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
 .place .bar span{display:block;height:100%;background:linear-gradient(90deg,#ec4899,#f59e0b)}
 .place b{width:56px;text-align:right;font-size:14px}
+.flare{position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;transition:opacity .4s;mix-blend-mode:screen}
+.flare i{position:absolute;left:var(--x);top:var(--y);width:260px;height:260px;margin:-130px;border-radius:50%;background:radial-gradient(circle,#fff 0 3%,rgba(255,240,200,.9) 6%,rgba(255,180,90,.25) 22%,transparent 60%)}
+.flare b{position:absolute;left:var(--x);top:var(--y);border-radius:50%;background:radial-gradient(circle,rgba(140,190,255,.35),transparent 70%)}
+.flare b:nth-of-type(1){width:60px;height:60px;margin:-30px;transform:translate(calc(var(--dx)*.6),calc(var(--dy)*.6))}
+.flare b:nth-of-type(2){width:26px;height:26px;margin:-13px;transform:translate(calc(var(--dx)*1.1),calc(var(--dy)*1.1));background:radial-gradient(circle,rgba(255,150,220,.45),transparent 70%)}
+.flare b:nth-of-type(3){width:110px;height:110px;margin:-55px;transform:translate(calc(var(--dx)*1.6),calc(var(--dy)*1.6));background:radial-gradient(circle,transparent 55%,rgba(120,255,200,.18) 62%,transparent 70%)}
+.meteor{position:absolute;z-index:1;width:140px;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff);transform:rotate(var(--a));transform-origin:100% 50%;pointer-events:none;animation:meteor 1.1s ease-out forwards;box-shadow:0 0 8px #fff}
+@keyframes meteor{from{opacity:0;translate:0 0}15%{opacity:1}to{opacity:0;translate:-220px 160px}}
+
+/* ---------- iOS-style: live activity card, depth number, glass, glow frame ---------- */
+.la{display:flex;gap:10px;margin-bottom:14px;padding:12px;border-radius:26px;background:#000;border:1px solid rgba(255,255,255,.1);box-shadow:0 18px 40px -16px rgba(0,0,0,.9)}
+.la-l{flex:1;min-width:0;display:flex;gap:10px;align-items:center}
+.la-th{width:58px;height:58px;border-radius:14px;object-fit:cover;flex:none;background:#20243a}
+.la-tx{min-width:0;flex:1}
+.la-tx small{font-size:11px;color:#9aa1b8}
+.la .lv{font-size:9px;font-weight:800;letter-spacing:.08em;background:#ff2d55;border-radius:4px;padding:1px 5px}
+.la-tx b{display:block;font-size:20px;letter-spacing:-.02em;margin:1px 0 4px}
+.la-bar{height:4px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-bottom:3px}
+.la-bar span{display:block;height:100%;background:linear-gradient(90deg,#ff2d55,#ff9f0a);border-radius:3px}
+.la-r{flex:none;width:92px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-left:1px solid rgba(255,255,255,.1);padding-left:8px}
+.la-r svg{position:absolute;top:2px;width:44px;height:44px;transform:rotate(-90deg)}
+.la-r svg circle{fill:none;stroke-width:3.5;stroke-linecap:round;transition:stroke-dasharray 1s linear}
+.la-r img{width:34px;height:34px;border-radius:50%;object-fit:cover;margin-top:7px;margin-bottom:6px}
+.la-r small{font-size:10px;color:#9aa1b8}
+.la-r b{font-size:14px;font-variant-numeric:tabular-nums}
+.depthlab{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.depthnum{display:flex;justify-content:center;font-size:clamp(60px,21vw,104px);font-weight:800;letter-spacing:-.06em;line-height:1;margin:4px 0 0;position:relative;z-index:0}
+.hero .avatar3d{margin-top:-46px;z-index:2}
+.hero .total{margin-top:2px}
+nav,.iconbtn,#mini{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.03) 40%,rgba(255,255,255,.06)),rgba(16,18,30,.42)!important;backdrop-filter:blur(18px) saturate(210%) brightness(1.08)!important;-webkit-backdrop-filter:blur(18px) saturate(210%) brightness(1.08)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(255,255,255,.08),inset 0 0 18px rgba(255,255,255,.06),0 20px 50px -12px rgba(0,0,0,.65)!important;border-color:rgba(255,255,255,.18)!important}
+#glowframe{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:0;transition:opacity .6s;padding:3px;border-radius:44px;background:conic-gradient(from var(--ga,0deg),#ff2d55,#ff9f0a,#ffd60a,#30d158,#0a84ff,#bf5af2,#ff2d55);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;filter:blur(6px);animation:gspin 2.4s linear infinite}
+#glowframe.on{opacity:1}
+@property --ga{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes gspin{to{--ga:360deg}}
+.otd{display:flex;gap:12px;padding:12px;align-items:center;border-radius:20px}
+.otd img,.otd .ph{width:74px;height:92px;border-radius:12px;object-fit:cover;flex:none;background:#20243a}
+.otd b{display:block;font-size:14px;margin:2px 0 4px;line-height:1.3}
+.otd span,.otd small{display:block;font-size:12px;color:var(--dim)}
+/* ---------- iMessage-style chat feed ---------- */
+.chat{padding:0 12px 10px;max-height:460px;overflow-y:auto}
+.chead{position:sticky;top:0;z-index:2;display:flex;flex-direction:column;align-items:center;padding:12px 0 8px;background:linear-gradient(rgba(18,21,36,.95),rgba(18,21,36,.75));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);margin:0 -12px 4px}
+.cavs{display:flex}
+.cavs span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:2px solid #121524;margin-left:-8px}
+.cavs span:first-child{margin-left:0}
+.cavs svg{width:15px;height:15px;fill:#fff}
+.chead b{font-size:13px;margin-top:4px}
+.chead small{font-size:11px;color:var(--up)}
+.cstamp{text-align:center;font-size:11px;color:var(--mute);margin:12px 0 6px;font-weight:600}
+.crow{display:flex;align-items:flex-end;gap:7px;margin-top:2px}
+.crow.end{margin-bottom:6px}
+.cav{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;visibility:hidden}
+.crow.end .cav{visibility:visible}
+.cav svg{width:14px;height:14px;fill:#fff}
+.bub{max-width:78%;padding:8px 13px;border-radius:19px;background:#2c2f3f;font-size:14.5px;line-height:1.3;position:relative;display:block}
+.bub small{display:block;font-size:11.5px;color:#a9aec4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow.end .bub{border-bottom-left-radius:5px}
+.crow.end .bub::before{content:"";position:absolute;left:-6px;bottom:0;width:12px;height:14px;background:#2c2f3f;clip-path:path("M12 0 C12 8 6 13 0 14 C6 14 12 12 12 10 Z")}
+.bub.pop{animation:bubpop .55s var(--spring) both;transform-origin:0 100%}
+@keyframes bubpop{from{transform:scale(.3) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.bub.slam{animation:slam .7s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes slam{0%{transform:scale(2.6) translateY(-30px);opacity:0}55%{transform:scale(.92);opacity:1}75%{transform:scale(1.04)}100%{transform:none}}
+.creceipt{text-align:right;font-size:11px;color:var(--mute);margin:2px 4px 4px}
+.typing{display:inline-flex;gap:4px;margin:4px 0 4px 33px;padding:11px 14px;border-radius:19px;background:#2c2f3f}
+.typing i{width:7px;height:7px;border-radius:50%;background:#8e93a8;animation:tdot 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+@keyframes tdot{0%,60%,100%{transform:none;opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+.heart{position:fixed;bottom:110px;z-index:41;font-size:26px;font-style:normal;pointer-events:none;animation:heartup 2.8s ease-out forwards}
+@keyframes heartup{0%{transform:translateY(0) scale(.4);opacity:0}12%{opacity:1;transform:translateY(-30px) scale(1.15)}100%{transform:translate(var(--dx),-60vh) scale(.8);opacity:0}}
+/* ---------- sky view ---------- */
+#sky{position:fixed;inset:0;z-index:46;background:#01020a;display:none}
+#sky.open{display:block}
+#sky canvas{width:100%;height:100%;display:block;touch-action:none}
+#sky .labels{position:absolute;inset:0;pointer-events:none}
+.skytag{position:absolute;transform:translate(-50%,14px);font-size:11px;color:#ffd1e6;text-align:center;white-space:nowrap;text-shadow:0 1px 6px #000}
+.skytag b{display:block;font-size:13px;color:#fff}
+.skytag.comp{font-size:15px;font-weight:800;color:#9bb0ff;transform:translate(-50%,-50%)}
+.skybar{position:absolute;top:calc(var(--top) + 12px);left:14px;right:14px;display:flex;justify-content:space-between;align-items:center}
+.skybar .motion{padding:10px 16px;border-radius:14px;font-weight:700;background:var(--g-hero)}
+.hint2{position:absolute;bottom:calc(var(--bot) + 26px);left:0;right:0;text-align:center;font-size:13px;color:#aab3d6}
+/* ---------- StandBy ---------- */
+#standby{position:fixed;inset:0;z-index:70;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;color:#ff4d4d}
+#standby.on{display:flex}
+#standby .clock{font-size:20px;font-weight:700;opacity:.7;letter-spacing:.06em}
+#standby .sbnum{font-size:min(30vw,62vh);font-weight:800;letter-spacing:-.06em;line-height:1;color:#ff5a4d;text-shadow:0 0 40px rgba(255,60,40,.35)}
+#standby .sblab{font-size:13px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;margin-top:4px}
+#standby .sbrow{display:flex;gap:22px;margin-top:16px;font-size:14px;color:#ff8a7a;opacity:.8}
+#standby .sbrow i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+
 /* ---------- arriving (route) ---------- */
 .arrive{padding:16px}
 .arrive .eta{font-size:13px;color:var(--dim)}
@@ -441,6 +531,7 @@ body.calm .rv{opacity:1;transform:none}
           <div class="wfocus" id="wfocus"></div>
         </div>
         <div class="sec rv" style="--i:1"><h2>Where your audience is</h2><small>Instagram · tap to fly</small></div>
+        <button class="bigbtn rv" style="--i:1;margin:14px 0 0" id="opensky">✦ Point your phone at the sky</button>
         <div class="glass rv" style="--i:2" id="wplaces"></div>
       </section>
     </main>
@@ -459,6 +550,11 @@ body.calm .rv{opacity:1;transform:none}
 
 <div id="sheet" aria-modal="true" role="dialog"><div class="in" id="sheetin"></div></div>
 <div id="browser"><div class="bar"><span class="count" id="bcount"></span><button class="iconbtn" id="bclose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="space" id="bspace"></div><div class="bhint">Swipe up for the next post · tap to open</div></div>
+<div id="sky"><canvas></canvas><div class="labels"></div>
+  <div class="skybar"><button class="iconbtn" id="skyclose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button><button class="motion">Use motion</button></div>
+  <div class="hint2"></div></div>
+<div id="standby"><div class="clock"></div><div class="sbnum num"></div><div class="sblab">total followers · live</div><div class="sbrow"></div></div>
+<div id="glowframe"></div>
 <div id="reveal"><canvas id="rcanvas"></canvas><h3 id="rtitle"></h3><p id="rsub"></p><div class="tap">Tap to close</div></div>
 
 <script type="module">
@@ -506,7 +602,8 @@ async function decrypt(box, pw){
   return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(box.iv)}, key, b64(box.ct))));
 }
 async function load(){
-  $("ref").classList.add("spin"); $("upd").textContent = "Refreshing…";
+  $("ref").classList.add("spin"); $("upd").textContent = "Refreshing…"; $("glowframe").classList.add("on");
+  const ty = $("typing"); if(ty) ty.classList.remove("hide");
   try{
     let box = null, lastErr = null;
     for(const src of SOURCES){
@@ -524,7 +621,7 @@ async function load(){
     if(e.name === "OperationError"){ store.del("stats_pass"); pass=null; history.replaceState(null, "", location.pathname); showLock("That passphrase didn't work. Check it matches STATS_KEY exactly.", true); return; }
     if(!data){ showLock(/404/.test(e.message) ? "No stats published yet. Try again in a few minutes." : "Couldn't load stats (" + e.message + "). Check your signal and try again."); return; }
     $("upd").textContent = "Offline · last update " + ago(data.updated); $("live").classList.add("stale");
-  }finally{ $("ref").classList.remove("spin"); }
+  }finally{ $("ref").classList.remove("spin"); setTimeout(() => $("glowframe").classList.remove("on"), 600); const ty = $("typing"); if(ty) ty.classList.add("hide"); }
 }
 const keys = () => ORDER.filter(k => data.accounts[k] && (data.accounts[k].followers != null || data.accounts[k].error));
 function past(k, secs){ const target = data.updated - secs; let best = null; for(const [t,s] of data.history){ if(t <= target && s[k] && s[k].f != null) best = s[k].f; } return best; }
@@ -648,17 +745,21 @@ function homePage(){
   const rings = ks.slice(0,5).map((k,i) => `<div class="ring r${i+1}" style="color:${C(k)}"><i class="sat"></i></div>`).join("");
   const av = ig.avatar || (A.youtube||{}).avatar;
   return `
+  ${liveCardHTML()}
   <div class="glass hero rv" style="--i:0">
+    <div class="lab depthlab">Total followers</div>
+    <div class="depthnum num chrome" id="htotal"></div>
     <div class="avatar3d" id="av3d"><div class="rings">${rings}</div>
       <div class="orbglass">${av ? `<img src="${esc(av)}" alt="" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=mono>W</div>'">` : `<div class="mono">W</div>`}</div></div>
-    <div class="total"><div class="lab">Total followers</div><div class="big num chrome" id="htotal"></div>${deltaChip(total, totalPast)}</div>
+    <div class="total">${deltaChip(total, totalPast)}</div>
   </div>
   <div class="sec rv" style="--i:1"><h2>Today</h2><small>goals adapt to your average</small></div>
   <div class="glass rings3 rv" style="--i:2">${ringsSVG()}</div>
   <div class="sec rv" style="--i:3"><h2>Next stop</h2><small>at your current pace</small></div>
   <div class="glass arrive rv" style="--i:3">${arriveHTML()}</div>
-  <div class="sec rv" style="--i:3"><h2>Live activity</h2><small>newest first</small></div>
-  <div class="glass feed rv" style="--i:4" id="feed">${feedHTML()}</div>`;
+  ${onThisDayHTML()}
+  <div class="sec rv" style="--i:3"><h2>Live activity</h2><small>your accounts' chat</small></div>
+  <div class="glass chat rv" style="--i:4" id="feed">${chatHTML()}</div>`;
 }
 function pace(k){ // followers per day over up to the last 7 days
   const s = series(k, data.updated - 7*86400); if(s.length < 2) return null;
@@ -712,6 +813,49 @@ function ringsSVG(){
   }).join("");
   const leg = R.map((x,i) => `<div><i style="background:${x.c1}"></i>${x.lab}<b><span class="rcnt" data-key="rc${i}" data-v="${x.val}" data-f="${x.f===fmt?"s":"f"}"></span> <small>/ ${x.f(x.goal)}</small></b></div>`).join("");
   return `<div class="arings" id="arings" data-over="${R.map(x=>x.p>=1?1:0).join("")}"><svg viewBox="0 0 100 100">${arcs}</svg></div><div class="rleg">${leg}</div>`;
+}
+/* live-activity card (top of Home): newest post live + countdown to the autopilot's next post */
+function liveCardHTML(){
+  const p = latestPost(), up = (data.extras || {}).upNext;
+  if(!p && !up) return "";
+  return `<div class="la rv" style="--i:0">
+    ${p ? `<div class="la-l">${thumbImg(p, "la-th")}<div class="la-tx"><span class="lv">LIVE</span> <small>${META[p.k].label} · ${when(p.ts)}</small><b class="num"><span id="laviews" class="roll"></span> views</b>
+      <div class="la-bar"><span style="width:${Math.min(100, (p.views||0)/nextPostMile(p.views||0)*100).toFixed(1)}%"></span></div><small>${full(Math.max(0, nextPostMile(p.views||0)-(p.views||0)))} to ${fmt(nextPostMile(p.views||0))}</small></div></div>` : ""}
+    ${up ? `<div class="la-r"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" stroke="rgba(255,255,255,.12)"/><circle id="upring" cx="22" cy="22" r="19" pathLength="100" stroke="url(#upg)" stroke-dasharray="0 100"/><defs><linearGradient id="upg"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
+      ${up.thumb ? `<img src="${esc(up.thumb)}" referrerpolicy="no-referrer" alt="">` : ""}<small>Up next</small><b id="upcount">–</b><small>${up.kind === "reel" ? "Reel" : "Post"} · ${new Date(up.at*1000).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</small></div>` : ""}
+  </div>`;
+}
+const nextPostMile = v => [1e3,5e3,1e4,25e3,5e4,1e5,25e4,5e5,1e6,5e6].find(m => m > v) || v*2;
+function tickUpNext(){
+  const up = data && (data.extras || {}).upNext, el = $("upcount"); if(!up || !el) return;
+  const s = Math.round(up.at - Date.now()/1000), span = 3*3600;
+  el.textContent = s <= 0 ? "Now live" : s < 3600 ? `${Math.floor(s/60)}m ${s%60}s` : `${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m`;
+  $("upring").setAttribute("stroke-dasharray", `${(clamp(1 - s/span, 0, 1)*100).toFixed(1)} 100`);
+}
+setInterval(tickUpNext, 1000);
+function onThisDayHTML(){
+  const o = (data.extras || {}).onThisDay; if(!o || !(o.posts || []).length) return "";
+  const p = o.posts[0], yrs = new Date().getFullYear() - new Date(p.ts).getFullYear();
+  return `<div class="sec rv" style="--i:3"><h2>On this day</h2><small>${yrs} year${yrs === 1 ? "" : "s"} ago</small></div>
+    <a class="glass otd rv" style="--i:3" href="${esc(p.url)}" target="_blank" rel="noopener">${thumbImg(p)}<div><small>${new Date(p.ts).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</small>
+      <b>${esc(p.title) || "(no caption)"}</b><span>♥ ${fmt(p.likes)} · 💬 ${fmt(p.comments)} now</span>${o.posts.length > 1 ? `<small>+${o.posts.length-1} more from this date</small>` : ""}</div></a>`;
+}
+/* the live feed as an iMessage-style chat from your accounts */
+let readSet = new Set(JSON.parse(store.get("stats_read") || "[]"));
+function chatHTML(){
+  const ev = (data.events || []).slice(-16), ks = keys();
+  const head = `<div class="chead"><div class="cavs">${ks.slice(0,4).map(k => `<span style="background:${G(k)}">${ICON[k]}</span>`).join("")}</div><b>${ks.length} accounts</b><small>active now</small></div>`;
+  if(!ev.length) return head + `<div class="empty">Messages from your accounts appear here as things happen.</div><div class="typing hide" id="typing"><i></i><i></i><i></i></div>`;
+  let out = "", lastT = 0;
+  ev.forEach((e, i) => { const [a] = evText(e), next = ev[i+1], endGroup = !next || next.k !== e.k || next.t - e.t > 1800;
+    if(e.t - lastT > 1800) out += `<div class="cstamp">${new Date(e.t*1000).toDateString() === new Date().toDateString() ? "Today" : new Date(e.t*1000).toLocaleDateString("en-GB",{weekday:"short"})} ${new Date(e.t*1000).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</div>`;
+    lastT = e.t;
+    const effect = e.type === "milestone" ? "slam" : e.type === "postMilestone" && e.m >= 1e5 ? "slam" : "";
+    out += `<div class="crow ${endGroup ? "end" : ""}"><span class="cav" style="background:${G(e.k)}">${endGroup ? ICON[e.k] : ""}</span>
+      <${e.url ? `a href="${esc(e.url)}" target="_blank" rel="noopener" data-read="${e.id}"` : "div"} class="bub ${e.id > feedMax && feedMax ? "pop " + effect : ""}">${esc(a)}${e.type !== "followers" && e.title ? `<small>${esc(e.title)}</small>` : ""}</${e.url ? "a" : "div"}></div>`; });
+  const last = ev[ev.length-1];
+  out += `<div class="creceipt">${last.url && readSet.has(last.id) ? "Read" : "Delivered"} ${ago(last.t)}</div><div class="typing hide" id="typing"><i></i><i></i><i></i></div>`;
+  return head + out;
 }
 function feedHTML(){
   const ev = (data.events || []).slice().reverse().slice(0, 14);
@@ -816,8 +960,11 @@ function render(){
   if(!firstPaint) document.body.classList.add("settled");
   const ht = $("htotal"); roll(ht, totalF(), full, "#ec4899"); if(prevTotal != null && prevTotal !== totalF()) setTimeout(() => ripple(ht), 300);
   field.set(growthRatio());
-  miniBar(); worldList(); instant = !firstPaint; activate(tab, 0); instant = false; wire();
-  if(globeApi && prevTotal != null && totalF() > prevTotal) globeApi.arcs(4);
+  miniBar(); worldList(); instant = !firstPaint; activate(tab, 0); instant = false; wire(); standby(); tickUpNext();
+  const lp = latestPost(); if(lp) roll($("laviews"), lp.views, full, META[lp.k].hex);
+  document.querySelectorAll("[data-read]").forEach(a => a.addEventListener("click", () => { readSet.add(+a.dataset.read); store.set("stats_read", JSON.stringify([...readSet].slice(-200))); }));
+  const ch = $("feed"); if(ch) ch.scrollTop = ch.scrollHeight;
+  if(globeApi && prevTotal != null && totalF() > prevTotal) globeApi.arcs(Math.min(8, totalF() - prevTotal));
   // live pill + medal reveal for new events
   const evs = data.events || [], maxId = evs.reduce((m,e)=>Math.max(m,e.id),0);
   if(seenEv === 0) seenEv = maxId; // first run: don't replay history
@@ -907,8 +1054,15 @@ function miniBar(){
 }
 function velocity(p){ const h = (data.postHist||{})[p.url]; if(!h || h.pts.length < 2) return null;
   const last = h.pts[h.pts.length-1], prev = [...h.pts].reverse().find(x => x[0] <= last[0]-3000) || h.pts[0]; const hrs = (last[0]-prev[0])/3600; return hrs > .1 ? (last[1]-prev[1])/hrs : null; }
+function hearts(n){   // floating reactions rising up the live post screen
+  const sh = $("sheet"); for(let i=0;i<Math.min(n, 12);i++) setTimeout(() => { const h = document.createElement("i"); h.className = "heart"; h.textContent = ["❤️","❤️","💖","👍","🔥"][Math.floor(Math.random()*5)];
+    h.style.left = (62 + Math.random()*30) + "%"; h.style.setProperty("--dx", (Math.random()*60 - 30) + "px"); h.style.animationDuration = (2.2 + Math.random()*1.2) + "s"; sh.appendChild(h); setTimeout(() => h.remove(), 3600); }, i*180);
+}
+let sheetLikes = null;
 function fillSheet(first=true){
   const p = livePost, k = p.k, h = (data.postHist||{})[p.url], v = velocity(p);
+  if(first){ sheetLikes = p.likes; setTimeout(() => hearts(Math.max(3, Math.min(8, Math.round((p.likes||0)/40)))), 700); }
+  else if(sheetLikes != null && p.likes > sheetLikes){ hearts(p.likes - sheetLikes); sheetLikes = p.likes; }
   if(first) delete rollMem.sviews;
   $("sheetin").innerHTML = `<div class="grab"></div>${p.thumb?`<img class="art" id="sart" src="${esc(p.thumb)}" referrerpolicy="no-referrer" alt="">`:`<div class="art" id="sart" style="background:${G(k)}"></div>`}
     <h3>${esc(p.title)||"Latest post"}</h3><div class="meta">${META[k].label} · ${esc(p.kind||"post")} · posted ${when(p.ts)}</div>
@@ -997,7 +1151,8 @@ let landFlown = false;
 const views3d = {};
 function loop3d(id, fn){ const v = views3d[id]; if(v) v.fn = fn; }
 function tick3d(){ for(const [id,v] of Object.entries(views3d)){ if(!v.el.isConnected){ v.renderer.dispose(); delete views3d[id]; continue; }
-  if(document.hidden || (id === "globe" ? tab !== "world" : tab !== "growth" && id !== "reveal")) continue; v.fn && v.fn(performance.now()); } requestAnimationFrame(tick3d); }
+  const skyOpen = $("sky").classList.contains("open");
+  if(document.hidden || (id === "sky" ? !skyOpen : skyOpen || (id === "globe" ? tab !== "world" : tab !== "growth" && id !== "reveal"))) continue; v.fn && v.fn(performance.now()); } requestAnimationFrame(tick3d); }
 requestAnimationFrame(tick3d);
 async function makeView(id, host){
   const THREE = await getThree(), cv = host.querySelector("canvas") || host;
@@ -1159,18 +1314,36 @@ async function globe(){
   const ll = (lat, lon, r = 1) => { const p = (90-lat)*Math.PI/180, t = (lon+180)*Math.PI/180; return new THREE.Vector3(-r*Math.sin(p)*Math.cos(t), r*Math.cos(p), r*Math.sin(p)*Math.sin(t)); };
   const earth = new THREE.Group(); earth.rotation.z = 23.44*Math.PI/180; scene.add(earth);   // real axial tilt
   const sunLocal = new THREE.Vector3(), sunWorld = new THREE.Vector3();
-  const mat = new THREE.ShaderMaterial({ uniforms: {day:{value:day}, night:{value:night}, spec:{value:spec}, sun:{value:sunWorld}, cam:{value:camera.position}},
+  const NASA = "https://cdn.jsdelivr.net/npm/three-globe@2.45.6/example/img/";   // NASA Blue Marble (day) + Black Marble (night)
+  const U = {day:{value:day}, night:{value:night}, spec:{value:spec}, sun:{value:sunWorld}, cam:{value:camera.position}, dayHi:{value:day}, nightHi:{value:night}, hi:{value:0}};
+  new THREE.TextureLoader().load(NASA + "earth-blue-marble.jpg", t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; U.dayHi.value = t;
+    new THREE.TextureLoader().load(NASA + "earth-night.jpg", n => { n.colorSpace = THREE.SRGBColorSpace; n.anisotropy = 8; U.nightHi.value = n; hiAt = performance.now(); }); });
+  let hiAt = 0;
+  const mat = new THREE.ShaderMaterial({ uniforms: U,
     vertexShader: `varying vec2 vUv;varying vec3 vN;varying vec3 vW;void main(){vUv=uv;vN=normalize(mat3(modelMatrix)*normal);vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
-    fragmentShader: `uniform sampler2D day,night,spec;uniform vec3 sun,cam;varying vec2 vUv;varying vec3 vN;varying vec3 vW;
+    fragmentShader: `uniform sampler2D day,night,spec,dayHi,nightHi;uniform float hi;uniform vec3 sun,cam;varying vec2 vUv;varying vec3 vN;varying vec3 vW;
       void main(){vec3 n=normalize(vN);float d=dot(n,normalize(sun));float k=smoothstep(-.16,.2,d);
-      vec3 dc=texture2D(day,vUv).rgb;vec3 nc=texture2D(night,vUv).rgb*vec3(1.,.82,.55)*1.8;
+      vec3 dc=mix(texture2D(day,vUv).rgb,texture2D(dayHi,vUv).rgb,hi);vec3 nc=mix(texture2D(night,vUv).rgb*vec3(1.,.82,.55)*1.8,texture2D(nightHi,vUv).rgb*vec3(1.,.85,.6)*2.2,hi);
       vec3 c=mix(nc,dc*(.18+.95*max(d,0.)),k);vec3 v=normalize(cam-vW);vec3 h=normalize(normalize(sun)+v);
       c+=texture2D(spec,vUv).r*pow(max(dot(n,h),0.),38.)*.55*k*vec3(1.,.95,.85);
       float f=pow(1.-max(dot(n,v),0.),3.);c+=vec3(.32,.6,1.)*f*(.15+.85*k);
-      c=mix(c,vec3(1.,.45,.2),smoothstep(.25,0.,abs(d))*.18*k);gl_FragColor=vec4(c,1.);
+      float band=exp(-pow(d/.045,2.));c=mix(c,c*vec3(1.25,.85,.6)+vec3(.22,.07,.02),band*.4);
+      c+=vec3(1.,.42,.14)*band*f*.7;gl_FragColor=vec4(c,1.);
       #include <colorspace_fragment>
       }` });
   const sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), mat); earth.add(sphere);
+  // auroras: shimmering curtains around both magnetic poles, only visible on the night side
+  const auroraU = {t:{value:0}, sun:{value:sunWorld}};
+  const auroraMat = new THREE.ShaderMaterial({ uniforms: auroraU, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+    vertexShader: `varying vec2 vUv;varying vec3 vW;void main(){vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+    fragmentShader: `uniform float t;uniform vec3 sun;varying vec2 vUv;varying vec3 vW;
+      float h(float x){return fract(sin(x*127.1)*43758.5);}float ns(float x){float i=floor(x),f=fract(x);return mix(h(i),h(i+1.),f*f*(3.-2.*f));}
+      void main(){float a=vUv.x*60.;float s=ns(a+t*.6)*.6+ns(a*2.3-t*.9)*.4;float y=vUv.y;
+      float night=smoothstep(.15,-.25,dot(normalize(vW),normalize(sun)));
+      float alpha=s*smoothstep(0.,.25,y)*smoothstep(1.,.35,y)*night*.9;
+      vec3 col=mix(vec3(.1,1.,.45),vec3(.65,.25,1.),smoothstep(.45,1.,y));gl_FragColor=vec4(col*alpha,alpha);}` });
+  for(const s of [1, -1]){ const ring = new THREE.Mesh(new THREE.CylinderGeometry(.42, .43, .09, 160, 1, true), auroraMat);
+    ring.position.y = s*.915; ring.rotation.x = s < 0 ? Math.PI : 0; ring.rotation.z = s*.18; earth.add(ring); }
   const cloud = new THREE.Mesh(new THREE.SphereGeometry(1.008, 64, 64), new THREE.MeshLambertMaterial({map: clouds, transparent: true, opacity: .55, depthWrite: false}));
   if(clouds) earth.add(cloud);
   const atmo = new THREE.Mesh(new THREE.SphereGeometry(1.075, 64, 64), new THREE.ShaderMaterial({ side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
@@ -1199,8 +1372,18 @@ async function globe(){
     earth.add(beam, tip, base); markers.push({...p, beam, tip, h, up, grow: 0, delay: i*.04});
   });
   if(!ps.length) $("wmsg").textContent = "Your audience map appears after the next refresh";
-  // satellite
-  const sat = new THREE.Sprite(new THREE.SpriteMaterial({map: glowT, color: 0x9bf6ff, blending: THREE.AdditiveBlending, depthWrite: false})); sat.scale.setScalar(.05); earth.add(sat);
+  // the real International Space Station, from its live position (updated every 10s)
+  const sat = new THREE.Sprite(new THREE.SpriteMaterial({map: glowT, color: 0x9bf6ff, blending: THREE.AdditiveBlending, depthWrite: false})); sat.scale.setScalar(.06); earth.add(sat);
+  const iss = {lat: 0, lon: 0, at: 0, vlat: 0, vlon: 0, ok: false};
+  const issFetch = async () => { if(tab === "world" && !document.hidden) try{ const r = await (await fetch("https://api.wheretheiss.at/v1/satellites/25544")).json();
+      const now = performance.now(); if(iss.ok){ const dt = (now - iss.at)/1000; iss.vlat = (r.latitude - iss.lat)/dt; iss.vlon = (((r.longitude - iss.lon) + 540) % 360 - 180)/dt; }
+      Object.assign(iss, {lat: r.latitude, lon: r.longitude, at: now, ok: true}); }catch(e){} };
+  issFetch(); setInterval(issFetch, 10000);
+  const issLabel = document.createElement("div"); issLabel.className = "wblink on"; issLabel.style.background = "rgba(10,40,60,.8)"; issLabel.textContent = "ISS · live"; host.appendChild(issLabel);
+  // lens flare + shooting stars (HTML overlays)
+  const flare = document.createElement("div"); flare.className = "flare"; flare.innerHTML = "<i></i><b></b><b></b><b></b>"; host.appendChild(flare);
+  const meteor = n => { for(let i=0;i<Math.min(n,8);i++) setTimeout(() => { const m = document.createElement("i"); m.className = "meteor";
+      m.style.left = (20 + Math.random()*80) + "%"; m.style.top = (Math.random()*35) + "%"; m.style.setProperty("--a", (200 + Math.random()*25) + "deg"); host.appendChild(m); setTimeout(() => m.remove(), 1400); }, i*260); };
   // camera: lat/lon/dist around the earth, flights arc up and back down
   const home = ps.find(p => p.cc === "GB") || {lat: 51.5, lon: -.12, name: "London"};
   const top = ps[0] || home;
@@ -1241,38 +1424,131 @@ async function globe(){
     try{ const r = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?" + new URLSearchParams({name: q, count: 1, language: "en", format: "json"}))).json(), g = (r.results||[])[0];
       if(!g) return; const c = ps.find(p => p.kind === "country" && p.cc === g.country_code);
       flyTo(g.latitude, g.longitude, 1.55, 2.6); focus({name: g.name, kind: c ? "country" : "city", cc: g.country_code, v: c ? c.v : 0}, c ? ` (in ${esc(c.name)})` : " — no followers listed here yet"); }catch(e){} };
-  globeApi = { arcs: shootArcs, flyToCountry: cc => { const p = ps.find(x => x.kind === "country" && x.cc === cc); if(p) flyPlace(p); } };
+  globeApi = { arcs: n => { shootArcs(n); meteor(n); }, meteor, flyToCountry: cc => { const p = ps.find(x => x.kind === "country" && x.cc === cc); if(p) flyPlace(p); } };
   // intro: zoom in from deep space, then fly to the top city
   flyTo(top.lat, top.lon, 2.3, 3.4, () => { if(ps.length){ focus(top); setTimeout(() => shootArcs(6), 600); } });
   const blink = $("wblink"), blinked = {}; const t0 = performance.now();
   loop3d("globe", now => {
     const date = new Date(), [sl, so] = sunLatLon(date), [ml, mo] = moonLatLon(date, so);
     sunLocal.copy(ll(sl, so)); sunWorld.copy(sunLocal).applyQuaternion(earth.quaternion).normalize(); sunLight.position.copy(sunWorld).multiplyScalar(10);
-    moon.position.copy(ll(ml, mo, 9)); cloud.rotation.y += .00012;
+    moon.position.copy(ll(ml, mo, 9)); cloud.rotation.y += .00012; auroraU.t.value = now/1000;
+    U.hi.value = hiAt ? Math.min(1, (now - hiAt)/1600) : 0;   // sharper NASA imagery fades in once loaded
+    let speed = 0;
     if(fly){ const p = clamp((now - fly.t0)/fly.dur, 0, 1), e = ease(p), A = ll(fly.from.lat, fly.from.lon), B = ll(fly.to.lat, fly.to.lon), ang = A.angleTo(B);
       const v = A.lerp(B, e).normalize(); cam.lat = 90 - Math.acos(clamp(v.y,-1,1))*180/Math.PI; cam.lon = ((Math.atan2(v.z, -v.x)*180/Math.PI - 180) + 540) % 360 - 180;
-      cam.dist = fly.from.dist + (fly.to.dist - fly.from.dist)*e + Math.sin(Math.PI*p)*ang*.9; if(p >= 1){ const t = fly.then; fly = null; t && t(); } }
+      cam.dist = fly.from.dist + (fly.to.dist - fly.from.dist)*e + Math.sin(Math.PI*p)*ang*.9; speed = Math.sin(Math.PI*p) * Math.min(1, ang*1.2 + Math.abs(fly.to.dist - fly.from.dist)/20);
+      if(p >= 1){ const t = fly.then; fly = null; t && t(); } }
     else if(now - idleAt > 7000 && !drag) cam.lon += .012;
     camera.position.copy(earth.localToWorld(ll(cam.lat, cam.lon, cam.dist))); camera.up.set(0,1,0).applyQuaternion(earth.quaternion); camera.lookAt(0,0,0);
+    if(speed > .05 && !reduce){ camera.position.add(new THREE.Vector3((Math.random()-.5), (Math.random()-.5), (Math.random()-.5)).multiplyScalar(.012*speed*cam.dist)); }   // camera shake
+    cv.style.filter = speed > .15 && !reduce ? `blur(${(speed*1.6).toFixed(2)}px)` : "";   // motion blur on fast flights
+    // lens flare when the sun peeks over the Earth's edge
+    const sunPos = sunWorld.clone().multiplyScalar(400), sp2 = sunPos.clone().project(camera), toSun = sunWorld.clone(), camN = camera.position.clone().normalize();
+    const behind = new THREE.Ray(camera.position, toSun).intersectsSphere(new THREE.Sphere(new THREE.Vector3(), 1.02));
+    const limb = 1 - Math.abs(new THREE.Ray(camera.position, toSun).distanceToPoint(new THREE.Vector3()) - 1.05)*3;
+    if(sp2.z < 1 && Math.abs(sp2.x) < 1.2 && Math.abs(sp2.y) < 1.2 && !behind){ const r = cv.getBoundingClientRect(), fx = (sp2.x+1)/2*r.width, fy = (1-sp2.y)/2*r.height;
+      flare.style.opacity = clamp(.35 + limb, .25, 1); flare.style.setProperty("--x", fx+"px"); flare.style.setProperty("--y", fy+"px"); flare.style.setProperty("--dx", (r.width/2 - fx)+"px"); flare.style.setProperty("--dy", (r.height/2 - fy)+"px"); }
+    else flare.style.opacity = 0;
     const s = (now - t0)/1000;
     markers.forEach(m => { m.grow = Math.min(1, m.grow + .02); const g = ease(clamp((s - 2.6 - m.delay)/1.2, 0, 1)) * (.85 + .15*m.grow);
       m.beam.scale.y = Math.max(.001, m.h*g); m.beam.position.copy(m.up).multiplyScalar(1 + m.h*g/2); m.tip.position.copy(m.up).multiplyScalar(1 + m.h*g); m.tip.material.opacity = .6 + .4*Math.sin(now/500 + m.delay*20); });
     for(let i = arcs.length-1; i >= 0; i--){ const a = arcs[i], t = (now - a.t0)/1000; a.g.setDrawRange(0, Math.floor(65*Math.min(1, t/1.1))); a.m.material.opacity = t < 1.4 ? 1 : Math.max(0, 1 - (t-1.4)/.9);
       if(t > 2.4){ earth.remove(a.m); a.g.dispose(); arcs.splice(i, 1); } }
     // satellite on an inclined orbit; flashes a city's number as it passes over
-    const w = now/42000*Math.PI*2, inc = 51.6*Math.PI/180, slat = Math.asin(Math.sin(inc)*Math.sin(w))*180/Math.PI, slon = ((Math.atan2(Math.cos(inc)*Math.sin(w), Math.cos(w))*180/Math.PI - now/400) % 360 + 540) % 360 - 180;
-    sat.position.copy(ll(slat, slon, 1.22));
-    const under = markers.find(m => m.kind === "city" && Math.abs(m.lat - slat) < 5 && Math.abs(((m.lon - slon + 540) % 360) - 180) < 6 && !(now - (blinked[m.name]||0) < 20000));
+    const dts = iss.ok ? (now - iss.at)/1000 : 0, slat = iss.lat + iss.vlat*dts, slon = ((iss.lon + iss.vlon*dts) + 540) % 360 - 180;
+    sat.visible = iss.ok; sat.position.copy(ll(slat, slon, 1.065));   // real altitude ~420 km
+    if(iss.ok){ const ip = earth.localToWorld(ll(slat, slon, 1.065)).project(camera), vis = earth.localToWorld(ll(slat, slon, 1)).normalize().dot(camera.position.clone().normalize()) > .15;
+      const r = cv.getBoundingClientRect(); issLabel.style.opacity = vis && ip.z < 1 ? 1 : 0; issLabel.style.left = (ip.x+1)/2*r.width + "px"; issLabel.style.top = (1-ip.y)/2*r.height + "px"; }
+    const under = iss.ok && markers.find(m => m.kind === "city" && Math.abs(m.lat - slat) < 5 && Math.abs(((m.lon - slon + 540) % 360) - 180) < 6 && !(now - (blinked[m.name]||0) < 20000));
     if(under){ blinked[under.name] = now; const sc = earth.localToWorld(under.up.clone().multiplyScalar(1 + under.h)).project(camera);
-      if(sc.z < 1){ const r = cv.getBoundingClientRect(); blink.style.left = (sc.x+1)/2*r.width + "px"; blink.style.top = (1-sc.y)/2*r.height + "px"; blink.textContent = `${under.name} · ${fmt(under.v)}`; blink.classList.add("on"); setTimeout(() => blink.classList.remove("on"), 1800); } }
+      if(sc.z < 1){ const r = cv.getBoundingClientRect(); blink.style.left = (sc.x+1)/2*r.width + "px"; blink.style.top = (1-sc.y)/2*r.height + "px"; blink.textContent = `ISS over ${under.name} · ${fmt(under.v)} followers`; blink.classList.add("on"); setTimeout(() => blink.classList.remove("on"), 1800); } }
     const sz = [cv.clientWidth, cv.clientHeight]; if(cv.width !== Math.round(sz[0]*renderer.getPixelRatio())){ renderer.setSize(sz[0], sz[1], false); camera.aspect = sz[0]/sz[1]; camera.updateProjectionMatrix(); }
     renderer.render(scene, camera);
   });
   }catch(err){ $("wmsg").textContent = "The globe needs a connection to load"; host._built = false; }
 }
 
+/* ================= Sky view: point your phone at the real sky ================= */
+async function openSky(){
+  const ov = $("sky"); ov.classList.add("open"); ov.querySelector(".hint2").textContent = "Loading the sky…";
+  if(ov._api){ ov._api.start(); return; }
+  try{
+  const THREE = await getThree(), cv = ov.querySelector("canvas"), labels = ov.querySelector(".labels");
+  const renderer = new THREE.WebGLRenderer({canvas: cv, antialias: true}); renderer.setPixelRatio(Math.min(2, devicePixelRatio||1)); renderer.setSize(innerWidth, innerHeight, false);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, .1, 2000); camera.rotation.order = "YXZ";
+  views3d.sky = {el: cv, renderer, fn: null};
+  const loc = await new Promise(r => navigator.geolocation ? navigator.geolocation.getCurrentPosition(p => r([p.coords.latitude, p.coords.longitude, true]), () => r([51.5, -.12, false]), {timeout: 6000, maximumAge: 6e5}) : r([51.5, -.12, false]));
+  const [lat0, lon0] = loc, R = Math.PI/180;
+  // direction helpers: az clockwise from north, el above horizon -> world (north = -Z, east = +X, up = +Y)
+  const dir = (az, el, r = 500) => new THREE.Vector3(Math.sin(az)*Math.cos(el), Math.sin(el), -Math.cos(az)*Math.cos(el)).multiplyScalar(r);
+  const d = (Date.now() - Date.UTC(2000,0,1,12))/864e5, lst = ((280.46061837 + 360.98564736629*d + lon0) % 360) * R, phi = lat0*R;
+  const radec = (ra, dec) => { const H = lst - ra*R, dd = dec*R, el = Math.asin(Math.sin(phi)*Math.sin(dd) + Math.cos(phi)*Math.cos(dd)*Math.cos(H));
+    const az = Math.atan2(-Math.cos(dd)*Math.sin(H), Math.sin(dd)*Math.cos(phi) - Math.cos(dd)*Math.cos(H)*Math.sin(phi)); return [az, el]; };
+  const CEL = "https://cdn.jsdelivr.net/npm/d3-celestial@0.7.35/data/";
+  const [stars, lines] = await Promise.all([fetch(CEL + "stars.6.json").then(r => r.json()), fetch(CEL + "constellations.lines.json").then(r => r.json())]);
+  const pos = [], col = [], size = [];
+  for(const f of stars.features){ const [ra, dec] = f.geometry.coordinates, m = f.properties.mag; if(m > 5.6) continue; const [az, el] = radec(ra, dec), v = dir(az, el);
+    pos.push(v.x, v.y, v.z); const bv = f.properties.bv ?? .6, c = new THREE.Color().setHSL(bv < .3 ? .6 : bv < .8 ? .14 : .07, bv < .3 ? .55 : .35, .85); col.push(c.r, c.g, c.b); size.push(Math.max(2.4, 9 - m*1.25)); }
+  const sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); sg.setAttribute("color", new THREE.Float32BufferAttribute(col, 3)); sg.setAttribute("size", new THREE.Float32BufferAttribute(size, 1));
+  const starMat = new THREE.ShaderMaterial({ uniforms: {t:{value:0}, pr:{value: renderer.getPixelRatio()}}, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true,
+    vertexShader: `attribute float size;varying vec3 vC;varying float vT;uniform float t,pr;void main(){vC=color;vec4 mv=modelViewMatrix*vec4(position,1.);vT=.75+.25*sin(t*2.+position.x*.37+position.y*.11);gl_PointSize=size*pr*vT;gl_Position=projectionMatrix*mv;}`,
+    fragmentShader: `varying vec3 vC;varying float vT;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,0.,d);a=a*a*.6+smoothstep(.18,0.,d);gl_FragColor=vec4(vC*a*1.8,a);}` });
+  scene.add(new THREE.Points(sg, starMat));
+  const lp = []; for(const f of lines.features) for(const line of f.geometry.coordinates) for(let i=1;i<line.length;i++){ const a = dir(...radec(...line[i-1]), 499), b = dir(...radec(...line[i]), 499); lp.push(a.x,a.y,a.z,b.x,b.y,b.z); }
+  const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
+  scene.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({color: 0x6f86ff, transparent: true, opacity: .28})));
+  // ground: a dark half-sphere below the horizon with a faint horizon glow
+  const ground = new THREE.Mesh(new THREE.SphereGeometry(480, 48, 24, 0, Math.PI*2, Math.PI/2, Math.PI/2), new THREE.MeshBasicMaterial({color: 0x05070c, side: THREE.BackSide, transparent: true, opacity: .78}));
+  scene.add(ground);
+  // your audience: each place in the real direction from where you're standing (through the Earth), joined as a constellation
+  const ecef = (la, lo) => { la *= R; lo *= R; return new THREE.Vector3(Math.cos(la)*Math.cos(lo), Math.cos(la)*Math.sin(lo), Math.sin(la)); };
+  const me = ecef(lat0, lon0), E = new THREE.Vector3(-Math.sin(lon0*R), Math.cos(lon0*R), 0), N = new THREE.Vector3().crossVectors(me, E);
+  const ps = places().filter(p => !(p.kind === "country" && places().some(c => c.kind === "city" && c.cc === p.cc))).slice(0, 10);
+  const tot = ps.reduce((s,p)=>s+p.v,0) || 1, gl = [];
+  const tags = ps.map((p, i) => { const v = ecef(p.lat, p.lon).sub(me); const az = Math.atan2(v.dot(E), v.dot(N)), el = Math.asin(clamp(v.normalize().dot(me), -1, 1)), w = dir(az, el, 470);
+    const s = new THREE.Mesh(new THREE.SphereGeometry(2.2 + 7*Math.sqrt(p.v/ps[0].v), 16, 16), new THREE.MeshBasicMaterial({color: 0xff4f9a})); s.position.copy(w); scene.add(s); gl.push(w);
+    const el2 = document.createElement("div"); el2.className = "skytag"; el2.innerHTML = `<b>${esc(p.name)}</b>${fmt(p.v)} followers · ${Math.round(Math.hypot(...ecef(p.lat,p.lon).sub(me).toArray())*6371).toLocaleString("en-GB")} km`; labels.appendChild(el2);
+    return {w, el: el2}; });
+  if(gl.length > 1) scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(gl), new THREE.LineBasicMaterial({color: 0xff7ab8, transparent: true, opacity: .55})));
+  // compass labels
+  const comp = [["N",0],["E",90],["S",180],["W",270]].map(([t, a]) => { const e = document.createElement("div"); e.className = "skytag comp"; e.textContent = t; labels.appendChild(e); return {w: dir(a*R, 0, 470), el: e}; });
+  // orientation: phone sensors if allowed, otherwise drag to look around
+  let q = null, yaw = 0, pitch = .25, dragging = null, offset = null; const qq = new THREE.Quaternion(), q1 = new THREE.Quaternion(-Math.sqrt(.5), 0, 0, Math.sqrt(.5)), z = new THREE.Vector3(0,0,1), eu = new THREE.Euler();
+  const onOri = e => { if(e.alpha == null) return; if(offset == null) offset = e.webkitCompassHeading != null ? (360 - e.webkitCompassHeading) - e.alpha : 0;
+    eu.set(e.beta*R, (e.alpha + offset)*R, -e.gamma*R, "YXZ"); qq.setFromEuler(eu).multiply(q1).multiply(new THREE.Quaternion().setFromAxisAngle(z, -((screen.orientation && screen.orientation.angle) || window.orientation || 0)*R)); q = qq; };
+  const enable = async () => { try{ if(typeof DeviceOrientationEvent !== "undefined" && DeviceOrientationEvent.requestPermission){ const s = await DeviceOrientationEvent.requestPermission(); if(s !== "granted") throw 0; }
+      addEventListener("deviceorientation", onOri); ov.querySelector(".hint2").textContent = loc[2] ? "Move your phone around the sky" : "Move your phone around · using London as your location"; }
+    catch(e){ ov.querySelector(".hint2").textContent = "Drag to look around"; } };
+  ov.querySelector(".motion").onclick = enable;
+  cv.onpointerdown = e => dragging = {x: e.clientX, y: e.clientY, yaw, pitch};
+  cv.onpointermove = e => { if(!dragging) return; q = null; yaw = dragging.yaw + (e.clientX - dragging.x)*.004; pitch = clamp(dragging.pitch + (e.clientY - dragging.y)*.004, -1.5, 1.5); };
+  cv.onpointerup = cv.onpointercancel = () => dragging = null;
+  ov.querySelector(".hint2").textContent = "Tap “Use motion” to point your phone at the sky, or drag";
+  const project = (w, el) => { const p = w.clone().project(camera); const on = p.z < 1 && Math.abs(p.x) < 1.1 && Math.abs(p.y) < 1.1; el.style.opacity = on ? 1 : 0; if(on){ el.style.left = (p.x+1)/2*innerWidth + "px"; el.style.top = (1-p.y)/2*innerHeight + "px"; } };
+  const api = { start(){ views3d.sky.fn = now => { if(!ov.classList.contains("open")) return;
+      if(q) camera.quaternion.slerp(q, .25); else camera.rotation.set(pitch, -yaw, 0);
+      starMat.uniforms.t.value = now/1000; tags.forEach(t => project(t.w, t.el)); comp.forEach(c => project(c.w, c.el)); renderer.render(scene, camera); }; } };
+  api.start(); ov._api = api;
+  addEventListener("resize", () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+  }catch(err){ ov.querySelector(".hint2").textContent = "The sky needs a connection to load"; }
+}
+
+/* ================= StandBy (phone sideways) ================= */
+const standbyMQ = matchMedia("(orientation: landscape) and (max-height: 520px)");
+function standby(){
+  const sb = $("standby"); if(!data || !standbyMQ.matches){ sb.classList.remove("on"); return; }
+  sb.classList.add("on"); const t = new Date();
+  sb.querySelector(".clock").textContent = t.toLocaleTimeString("en-GB", {hour: "2-digit", minute: "2-digit"});
+  roll(sb.querySelector(".sbnum"), totalF(), full, "#ff5a5a");
+  sb.querySelector(".sbrow").innerHTML = keys().filter(k => data.accounts[k].followers != null).map(k => `<span><i style="background:${C(k)}"></i>${META[k].label} <b>${fmt(data.accounts[k].followers)}</b></span>`).join("");
+}
+standbyMQ.addEventListener ? standbyMQ.addEventListener("change", standby) : standbyMQ.addListener(standby);
+setInterval(() => $("standby").classList.contains("on") && standby(), 15000);
+
 /* ================= tabs, swipe, lock, boot ================= */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.tab));
+$("opensky").onclick = openSky; $("skyclose").onclick = () => $("sky").classList.remove("open");
+$("standby").onclick = () => $("standby").classList.remove("on");
 let sx = 0, sy = 0, st = 0;
 $("main").addEventListener("touchstart", e => { if(e.target.closest(".chart,.chips,.top10,.stage3d,.wcard,.world")){ st = 0; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); }, {passive:true});
 $("main").addEventListener("touchend", e => { if(!st) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
