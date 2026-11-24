@@ -463,9 +463,25 @@
   "2026-11-24 03:00 feed",
   "2026-11-24 06:00 reel",
   "2026-11-24 09:00 feed",
-  "2026-11-24 12:00 reel"
+  "2026-11-24 12:00 reel",
+  "2026-11-24 15:00 feed"
  ],
  "history": [
+  {
+   "slot": "2026-11-24 15:00 feed",
+   "kind": "feed",
+   "new": "261121234909",
+   "cloud": true,
+   "status": "posted",
+   "url": "https://www.instagram.com/p/DgIOgooF0ry/",
+   "also": {
+    "facebook": {
+     "status": "scheduled",
+     "for": "2026-11-24 19",
+     "url": "https://www.facebook.com/1087481764349057"
+    }
+   }
+  },
   {
    "slot": "2026-11-24 12:00 reel",
    "kind": "reel",
@@ -2324,7 +2340,7 @@
   "feed": "follow (@wslyyofficial) for more relatable content"
  },
  "first_comment": "Full videos on my YouTube \ud83d\udc49 link in bio \ud83c\udfac",
- "last_run": "2026-11-24T11:24+00:00",
+ "last_run": "2026-11-24T14:47+00:00",
  "unusable": [
   "17845196039759179",
   "17892531764610163",
@@ -2358,7 +2374,8 @@
    "2026-11-24 09",
    "2026-11-24 12",
    "2026-11-24 14",
-   "2026-11-24 17"
+   "2026-11-24 17",
+   "2026-11-24 19"
   ]
  },
  "new_done": [
@@ -2380,7 +2397,8 @@
   "261121234907",
   "2611220005r08",
   "261121234908",
-  "2611220005r09"
+  "2611220005r09",
+  "261121234909"
  ],
  "new_fails": {
   "261121234906": 1
