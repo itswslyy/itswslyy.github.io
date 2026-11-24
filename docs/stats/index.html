@@ -62,7 +62,7 @@ svg.spark{display:block;width:100%;height:46px}
   <div id="lock" class="hide">
     <h1>My Stats</h1>
     <div class="sub">Enter your stats passphrase. It's only stored on this phone.</div>
-    <input id="pw" type="password" autocomplete="current-password" placeholder="Passphrase">
+    <input id="pw" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Passphrase">
     <button id="go">Unlock</button>
     <div id="lockerr" class="err" style="padding:0"></div>
   </div>
@@ -121,7 +121,9 @@ async function load(){
     store.set("stats_cache", JSON.stringify(data));
     render();
   }catch(e){
-    if(e.name === "OperationError"){ store.del("stats_pass"); pass=null; showLock("That passphrase didn't work."); return; }
+    if(e.name === "OperationError"){ store.del("stats_pass"); pass=null; showLock("That passphrase didn't work. Check it matches STATS_KEY exactly."); return; }
+    if(!data){ showLock(/404/.test(e.message) ? "No stats published yet. The first refresh on GitHub hasn't run – try again in a few minutes."
+                                              : "Couldn't load stats (" + e.message + "). Check your signal and try again."); return; }
     $("upd").textContent = "Offline – showing last saved" + (data ? " (" + ago(data.updated) + ")" : "");
   }
 }
@@ -187,7 +189,7 @@ function render(){
 }
 
 function showLock(msg){ $("app").classList.add("hide"); $("lock").classList.remove("hide"); $("lockerr").textContent = msg||""; $("pw").focus(); }
-$("go").onclick = () => { const v=$("pw").value.trim(); if(!v) return; pass=v; store.set("stats_pass", v); load(); };
+$("go").onclick = () => { const v=$("pw").value.trim().toLowerCase(); if(!v) return; pass=v; $("lockerr").textContent="Unlocking…"; store.set("stats_pass", v); load(); };
 $("pw").onkeydown = e => { if(e.key==="Enter") $("go").click(); };
 $("ref").onclick = load;
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && pass) load(); });
