@@ -97,7 +97,10 @@ const META = {
 };
 const $ = id => document.getElementById(id);
 const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}}};
-let pass = store.get("stats_pass"), data = null, open = new Set(JSON.parse(store.get("stats_open")||"[]"));
+// The passphrase is also kept in the link's #fragment (never sent to any server), because iPhone home-screen
+// apps can lose saved storage between launches. Adding to Home Screen after unlocking bakes it into the icon.
+const fromHash = new URLSearchParams(location.hash.slice(1)).get("k");
+let pass = fromHash || store.get("stats_pass"), data = null, open = new Set(JSON.parse(store.get("stats_open")||"[]"));
 
 const fmt = n => n==null ? "–" : n>=1e6 ? (n/1e6).toFixed(n>=1e7?1:2).replace(/\.0+$/,"")+"M" : n>=1e4 ? (n/1e3).toFixed(1).replace(/\.0$/,"")+"K" : n.toLocaleString("en-GB");
 const ago = t => { const s=Date.now()/1000-t; return s<90?"just now":s<3600?Math.round(s/60)+" min ago":s<86400?Math.round(s/3600)+" h ago":Math.round(s/86400)+" d ago"; };
@@ -118,10 +121,13 @@ async function load(){
     const r = await fetch(SRC + "?t=" + Date.now(), {cache:"no-store"});
     if(!r.ok) throw new Error("HTTP " + r.status);
     data = await decrypt(await r.json(), pass);
+    store.set("stats_pass", pass);
+    if(new URLSearchParams(location.hash.slice(1)).get("k") !== pass) history.replaceState(null, "", "#k=" + encodeURIComponent(pass));
+    try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
     store.set("stats_cache", JSON.stringify(data));
     render();
   }catch(e){
-    if(e.name === "OperationError"){ store.del("stats_pass"); pass=null; showLock("That passphrase didn't work. Check it matches STATS_KEY exactly."); return; }
+    if(e.name === "OperationError"){ store.del("stats_pass"); pass=null; history.replaceState(null, "", location.pathname); showLock("That passphrase didn't work. Check it matches STATS_KEY exactly."); return; }
     if(!data){ showLock(/404/.test(e.message) ? "No stats published yet. The first refresh on GitHub hasn't run – try again in a few minutes."
                                               : "Couldn't load stats (" + e.message + "). Check your signal and try again."); return; }
     $("upd").textContent = "Offline – showing last saved" + (data ? " (" + ago(data.updated) + ")" : "");
