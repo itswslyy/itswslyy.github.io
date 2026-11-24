@@ -646,6 +646,12 @@ $("ref").onclick = load;
 document.addEventListener("visibilitychange", () => { if(!document.hidden && pass) load(); });
 setInterval(() => { if(!document.hidden && pass) load(); }, 120000);
 
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+  // when a newer version of the app takes over, reload once to show it
+  let reloaded = false; const hadOne = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if(hadOne && !reloaded){ reloaded = true; location.reload(); } });
+}
 if(!pass) showLock();
 else { try{ data = JSON.parse(store.get("stats_cache") || "null"); }catch(e){} if(data) render(); load(); }
 </script>
