@@ -2,8 +2,8 @@ name: Phone Stats
 # Fetches every account's numbers and publishes them ENCRYPTED to the stats-data branch, which the phone page
 # (itswslyy.github.io/stats/) reads. The branch is replaced each run, so the repo doesn't grow.
 on:
-  schedule:
-    - cron: "7,22,37,52 * * * *"   # every 15 min (GitHub may start these a few minutes late)
+  # Live stats now come from the Cloudflare worker (Instagram Agent/stats-worker) every 5 min.
+  # This GitHub copy is only a backup the phone falls back to; run it by hand if ever needed.
   workflow_dispatch:
 permissions:
   contents: write

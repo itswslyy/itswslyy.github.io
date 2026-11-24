@@ -295,7 +295,7 @@ nav button[aria-selected="true"] svg{transform:translateY(-1px) scale(1.12)}
       <section class="page" id="p-top"></section>
       <section class="page" id="p-growth"></section>
     </main>
-    <div class="foot">Updates about every 15 min · swipe to switch tabs</div>
+    <div class="foot">Live · refreshes every 5 min · swipe to switch tabs</div>
   </div>
   <nav role="tablist" aria-label="Sections">
     <div class="pill" id="pill"></div>
@@ -307,8 +307,10 @@ nav button[aria-selected="true"] svg{transform:translateY(-1px) scale(1.12)}
 </div>
 
 <script>
-const RAW = "https://raw.githubusercontent.com/itswslyy/itswslyy.github.io/stats-data/stats.enc";
-const SRC = location.hostname.endsWith("github.io") ? RAW : "stats.enc";
+// Live source: Cloudflare worker (refreshes every 5 min). Backup: the older GitHub copy.
+const SOURCES = location.hostname.endsWith("github.io")
+  ? ["https://wslyy-stats.wslyy.workers.dev/stats.enc", "https://raw.githubusercontent.com/itswslyy/itswslyy.github.io/stats-data/stats.enc"]
+  : ["stats.enc"];
 const ICON = {
   instagram:'<svg viewBox="0 0 24 24"><path d="M12 7.3A4.7 4.7 0 1 0 12 16.7 4.7 4.7 0 0 0 12 7.3Zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6Zm6-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0ZM12 3.6c2.7 0 3 0 4.1.1 2.7.1 4 1.4 4.1 4.1.1 1.1.1 1.4.1 4.1s0 3-.1 4.1c-.1 2.7-1.4 4-4.1 4.1-1.1.1-1.4.1-4.1.1s-3 0-4.1-.1c-2.7-.1-4-1.4-4.1-4.1C3.7 15 3.6 14.7 3.6 12s0-3 .1-4.1C3.8 5.2 5.1 3.9 7.9 3.7 9 3.6 9.3 3.6 12 3.6ZM12 2c-2.7 0-3.1 0-4.1.1C4.2 2.2 2.2 4.2 2.1 7.9 2 8.9 2 9.3 2 12s0 3.1.1 4.1c.2 3.7 2.2 5.7 5.8 5.8 1 .1 1.4.1 4.1.1s3.1 0 4.1-.1c3.7-.2 5.7-2.2 5.8-5.8.1-1 .1-1.4.1-4.1s0-3.1-.1-4.1c-.2-3.7-2.2-5.7-5.8-5.8C15.1 2 14.7 2 12 2Z"/></svg>',
   youtube:'<svg viewBox="0 0 24 24"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8ZM10 15V9l5.2 3L10 15Z"/></svg>',
@@ -357,9 +359,16 @@ async function decrypt(box, pw){
 async function load(){
   $("ref").classList.add("spin"); $("upd").textContent = "Refreshing…";
   try{
-    const r = await fetch(SRC + "?t=" + Date.now(), {cache:"no-store"});
-    if(!r.ok) throw new Error("HTTP " + r.status);
-    data = await decrypt(await r.json(), pass);
+    let box = null, lastErr = null;
+    for(const src of SOURCES){
+      try{
+        const r = await fetch(src + "?t=" + Date.now(), {cache:"no-store"});
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        box = await r.json(); break;
+      }catch(e){ lastErr = e; }
+    }
+    if(!box) throw lastErr;
+    data = await decrypt(box, pass);
     store.set("stats_pass", pass);
     if(new URLSearchParams(location.hash.slice(1)).get("k") !== pass) history.replaceState(null, "", "#k=" + encodeURIComponent(pass));
     try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
@@ -531,7 +540,7 @@ function areaSVG(k, s){
 let firstPaint = true;
 function render(){
   $("lock").classList.add("hide"); $("app").classList.remove("hide");
-  $("upd").textContent = "Live · updated " + ago(data.updated); $("live").classList.toggle("stale", Date.now()/1000 - data.updated > 3600);
+  $("upd").textContent = "Live · updated " + ago(data.updated); $("live").classList.toggle("stale", Date.now()/1000 - data.updated > 20*60);
   const h = new Date().getHours(); $("hello").textContent = (h<5?"Up late":h<12?"Good morning":h<18?"Good afternoon":"Good evening") + ", wslyy 👋";
   $("p-home").innerHTML = homePage(); $("p-accounts").innerHTML = accountsPage(); $("p-top").innerHTML = topPage(); $("p-growth").innerHTML = growthPage();
   if(!firstPaint) document.body.classList.add("settled");
@@ -644,7 +653,7 @@ $("go").onclick = () => { const v = $("pw").value.trim().toLowerCase(); if(!v) r
 $("pw").onkeydown = e => { if(e.key === "Enter") $("go").click(); };
 $("ref").onclick = load;
 document.addEventListener("visibilitychange", () => { if(!document.hidden && pass) load(); });
-setInterval(() => { if(!document.hidden && pass) load(); }, 120000);
+setInterval(() => { if(!document.hidden && pass) load(); }, 60000);
 
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js").catch(() => {});
