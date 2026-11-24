@@ -1,0 +1,54 @@
+name: Phone Stats
+# Fetches every account's numbers and publishes them ENCRYPTED to the stats-data branch, which the phone page
+# (itswslyy.github.io/stats/) reads. The branch is replaced each run, so the repo doesn't grow.
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"   # every 15 min (GitHub may start these a few minutes late)
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: phone-stats
+  cancel-in-progress: false
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check the STATS_KEY secret exists
+        id: key
+        env:
+          STATS_KEY: ${{ secrets.STATS_KEY }}
+        run: |
+          if [ -n "$STATS_KEY" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "::notice::Add the STATS_KEY secret to switch phone stats on. Skipping for now."; fi
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.ok == 'true'
+      - uses: actions/setup-python@v5
+        if: steps.key.outputs.ok == 'true'
+        with:
+          python-version: "3.12"
+      - run: pip install -q cryptography
+        if: steps.key.outputs.ok == 'true'
+      - name: Get the previous stats (for 24h changes and charts)
+        if: steps.key.outputs.ok == 'true'
+        run: git fetch -q origin stats-data && git show origin/stats-data:stats.enc > stats.enc || echo "first run"
+      - name: Fetch stats
+        if: steps.key.outputs.ok == 'true'
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          FB_TOKEN: ${{ secrets.FB_TOKEN }}
+          THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+          YT_AUTH: ${{ secrets.YT_AUTH }}
+          WEZLA_AUTH: ${{ secrets.WEZLA_AUTH }}
+          STATS_KEY: ${{ secrets.STATS_KEY }}
+        run: python stats.py
+      - name: Publish
+        if: steps.key.outputs.ok == 'true'
+        run: |
+          mkdir /tmp/pub && cp stats.enc /tmp/pub/ && cd /tmp/pub
+          git init -q -b stats-data
+          git config user.name "stats-bot"
+          git config user.email "stats-bot@users.noreply.github.com"
+          git add stats.enc && git commit -q -m "stats $(date -u +%FT%TZ)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" stats-data
