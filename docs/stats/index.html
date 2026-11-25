@@ -546,6 +546,9 @@ nav,.iconbtn,#mini{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(
 .dotkey{display:flex;gap:9px;flex-wrap:wrap;font-style:normal;font-size:10.5px;color:var(--dim);margin-top:3px}.dotkey u,.wkey u{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
 .wkey{position:absolute;top:98px;left:12px;z-index:2;display:flex;flex-direction:column;gap:4px;font-size:11px;color:#dfe3f0;background:rgba(10,12,22,.55);padding:6px 9px;border-radius:10px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 #bell.on{color:#35e08f}
+.mlhero{padding:16px;margin-bottom:10px;background:linear-gradient(135deg,rgba(29,185,84,.25),rgba(29,185,84,.05))!important}
+.mlhero small{display:block;font-size:12px;color:#9fd9b4}.mlhero b{display:block;font-size:42px;font-weight:800;letter-spacing:-.04em;margin:2px 0}
+.mlhero span{font-size:13px;font-weight:700}.mlhero span.up{color:var(--up)}.mlhero span.down{color:var(--down)}.mlhero em{display:block;font-style:normal;font-size:13px;color:var(--dim);margin-top:4px}
 /* calmer, cleaner overall */
 #field.on{opacity:.75}
 .rv{transform:translateY(12px) scale(.99)}
@@ -1586,7 +1589,9 @@ function placesFor(k){   // audience places for an account: Instagram cities/cou
     const out = (au.cities || []).map(([nm, v, lat, lon, cc]) => ({name: nm.split(",")[0], full: nm, v, lat, lon, cc, kind: "city"}));
     for(const [cc, v] of au.countries || []) if(CC[cc] && !out.some(o => o.cc === cc)) out.push({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"});
     return out; }
-  if(k === "spotify"){ const sa = data && data.s4a; return sa ? (sa.cities || []).map(([nm, v, lat, lon, cc]) => ({name: nm, full: nm, v, lat, lon, cc, kind: "city"})) : []; }
+  if(k === "spotify"){ const sa = data && data.s4a; if(!sa) return [];
+    if((sa.cities || []).length) return sa.cities.map(([nm, v, lat, lon, cc]) => ({name: nm, full: nm, v, lat, lon, cc, kind: "city"}));
+    return (sa.countries || []).filter(([cc]) => CC[cc]).map(([cc, v]) => ({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"})); }
   if(k === "wezla"){ const yc = data && data.ytCountries; return yc ? (yc.countries || []).filter(([cc]) => CC[cc]).map(([cc, v]) => ({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"})) : []; }
   return [];
 }
@@ -1863,10 +1868,10 @@ setInterval(() => $("standby").classList.contains("on") && standby(), 15000);
 /* ================= Music: Spotify + @wslyymusic dashboard, song heat, discography wall, release launch ================= */
 const spP = () => data.history.filter(h => h[1].spotify && h[1].spotify.p != null).map(h => [h[0], h[1].spotify.p]);
 function musicCardHTML(){
-  const sp = data.accounts.spotify, mi = data.accounts.musicig, mf = data.accounts.musicfb; if(!sp && !mi) return "";
+  const sp = data.accounts.spotify, mi = data.accounts.musicig, mf = data.accounts.musicfb; if(!sp && !mi && !data.s4a) return "";
   const pop = sp && sp.popularity != null ? sp.popularity : null;
   return `<button class="glass mcard rv" style="--i:2" id="openmusic">${pop != null ? `<svg class="pring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" stroke="rgba(255,255,255,.1)"/><circle cx="22" cy="22" r="18" pathLength="100" stroke="#1db954" stroke-dasharray="${pop} 100"/><text x="22" y="26" text-anchor="middle">${pop}</text></svg>` : ""}
-    <span class="mtx"><b>Your music</b><small>${[sp && `Spotify ${fmt(sp.followers)}`, mi && `IG ${fmt(mi.followers)}`, mf && `FB ${fmt(mf.followers)}`].filter(Boolean).join(" · ")}</small></span><em>Open ›</em></button>`;
+    <span class="mtx"><b>Your music</b><small>${[data.s4a && (data.s4a.timeline||[]).length && `${fmt((data.s4a.timeline.slice(-1)[0]||[])[4])} monthly listeners`, sp && sp.followers != null && `Spotify ${fmt(sp.followers)}`, mi && `IG ${fmt(mi.followers)}`, mf && `FB ${fmt(mf.followers)}`].filter(Boolean).join(" · ")}</small></span><em>Open ›</em></button>`;
 }
 function openMusic(){
   const m = $("music"), sp = data.accounts.spotify || {}, posts = sp.posts || [], rel = (sp.releases || []).slice().sort((a,b) => (b.ts||"").localeCompare(a.ts||""));
@@ -1888,14 +1893,19 @@ function openMusic(){
 function s4aHTML(){   // Spotify for Artists exports: streams, listeners, top songs, cities
   const sa = data.s4a; if(!sa) return `<div class="sec"><h2>Streams</h2><small>from Spotify for Artists</small></div><div class="glass empty">Download your stats from Spotify for Artists into <b>Desktop › wslyy music › spotify</b>, then double-click <b>Import Spotify</b>.</div>`;
   const tl = (sa.timeline || []).slice(-28), st = tl.reduce((a,r) => a + r[1], 0), li = tl.length ? tl[tl.length-1][2] : 0, songs = sa.songs || [], mx = Math.max(1, ...songs.map(x => x.streams));
+  const lastT = (sa.timeline || []).slice(-1)[0] || [], monthAgo = (sa.timeline || []).slice(-29)[0] || [], ml = lastT[4] || 0, fol = lastT[3] || 0, mlCh = ml && monthAgo[4] ? ml - monthAgo[4] : null;
+  const pls = sa.playlists || [], pmx = Math.max(1, ...pls.map(x => x[3])), ctry = sa.countries || [];
   let chart = "";
   if(tl.length > 1){ const ys = tl.map(r => r[1]), y1 = Math.max(1, ...ys), W = 400, H = 120, d = tl.map((r,i) => (i?"L":"M") + (i/(tl.length-1)*W).toFixed(1) + "," + (H - r[1]/y1*H).toFixed(1)).join("");
     chart = `<svg viewBox="0 0 ${W} ${H+14}" preserveAspectRatio="none" style="width:100%;height:140px"><path d="${d}L${W},${H}L0,${H}Z" fill="rgba(29,185,84,.2)"/><path d="${d}" fill="none" stroke="#1db954" stroke-width="2.2" vector-effect="non-scaling-stroke"/><text class="ax" x="0" y="${H+12}">${esc(tl[0][0])}</text><text class="ax" x="${W}" y="${H+12}" text-anchor="end">${esc(tl[tl.length-1][0])}</text></svg>`; }
   return `<div class="sec"><h2>Streams</h2><small>Spotify for Artists · imported ${ago(sa.at)}</small></div>
+    ${ml ? `<div class="glass mlhero"><small>Monthly listeners · ${esc(lastT[0] || "")}</small><b class="num">${full(ml)}</b>${mlCh != null ? `<span class="${mlCh >= 0 ? "up" : "down"}">${mlCh >= 0 ? "▲ +" : "▼ "}${full(mlCh)} vs a month before</span>` : ""}${fol ? `<em>${full(fol)} followers</em>` : ""}</div>` : ""}
     <div class="mstats">${tl.length ? `<div style="--g:var(--g-spotify)"><i>▶</i><b>${fmt(st)}</b><small>streams · last ${tl.length} days</small></div><div style="--g:var(--g-spotify)"><i>🎧</i><b>${fmt(li)}</b><small>listeners · latest day</small></div>` : ""}
       ${songs.length ? `<div style="--g:var(--g-spotify)"><i>♫</i><b>${fmt(songs.reduce((a,x) => a + x.streams, 0))}</b><small>streams · all songs</small></div>` : ""}</div>
     ${chart ? `<div class="glass" style="padding:10px 12px;margin-top:10px">${chart}</div>` : ""}
     ${songs.length ? `<div class="sec"><h2>Top songs</h2><small>by streams</small></div><div class="glass">${songs.slice(0,15).map((x,i) => `<div class="heat"><span style="width:22px;flex:none;color:var(--dim);font-weight:800">${i+1}</span><span><b>${esc(x.title)}</b><i class="meter"><em style="--p:${(x.streams/mx*100).toFixed(1)}%;--h:140"></em></i></span><strong style="color:#1db954;width:auto;font-size:15px">${fmt(x.streams)}</strong></div>`).join("")}</div>` : ""}
+    ${pls.length ? `<div class="sec"><h2>Where streams come from</h2><small>playlists · last year</small></div><div class="glass">${pls.slice(0,10).map(x => `<div class="heat"><span><b>${esc(x[0])}</b><i class="meter"><em style="--p:${(x[3]/pmx*100).toFixed(1)}%;--h:${x[1] === "Spotify" ? 140 : 280}"></em></i></span><strong style="width:auto;font-size:14px;color:${x[1] === "Spotify" ? "#1db954" : "#b07cff"}">${fmt(x[3])}</strong></div>`).join("")}<div class="hint">green = Spotify's own playlists & algorithm · purple = listener playlists</div></div>` : ""}
+    ${ctry.length && !(sa.cities||[]).length ? `<div class="sec"><h2>Listener countries</h2><small>last 28 days · green on the globes</small></div><div class="glass">${ctry.slice(0,10).map(c => `<div class="place"><span class="nm">${esc(regionName(c[0]))}</span><b>${fmt(c[1])}</b></div>`).join("")}</div>` : ""}
     ${(sa.cities||[]).length ? `<div class="sec"><h2>Listener cities</h2><small>green on the globes</small></div><div class="glass">${sa.cities.slice(0,10).map(c => `<div class="place"><span class="nm">${esc(c[0])}</span><b>${fmt(c[1])}</b></div>`).join("")}</div>` : ""}`;
 }
 function popChart(){   // Spotify popularity over time, with @wslyymusic Reels marked and the popularity change 48h after each
