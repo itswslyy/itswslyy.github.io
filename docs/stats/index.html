@@ -1554,7 +1554,8 @@ function medal(THREE, k, m){
   const face = new THREE.MeshPhysicalMaterial({map: tex, metalness: .85, roughness: .2, clearcoat: 1, clearcoatRoughness: .06, envMapIntensity: 1.4});
   const rim = new THREE.MeshPhysicalMaterial({color: new THREE.Color(color), metalness: 1, roughness: .1, clearcoat: 1, clearcoatRoughness: .03, envMapIntensity: 1.8});
   const coin = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .16, 96), [rim, face, face]);
-  const bevel = new THREE.Mesh(new THREE.TorusGeometry(1, .085, 24, 120), rim);   // polished rounded edge coin.rotation.x = Math.PI/2;
+  const bevel = new THREE.Mesh(new THREE.TorusGeometry(1, .085, 24, 120), rim);   // polished rounded edge
+  coin.rotation.x = Math.PI/2;
   const ring = new THREE.Mesh(new THREE.TorusGeometry(1.01, .05, 16, 90), new THREE.MeshStandardMaterial({color: new THREE.Color(META[k].hex), metalness: .8, roughness: .25, emissive: new THREE.Color(META[k].hex), emissiveIntensity: .35}));
   const g = new THREE.Group(); g.add(coin, bevel, ring); return g;
 }
