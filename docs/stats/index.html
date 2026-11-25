@@ -906,7 +906,6 @@ function homePage(){
   </div>
   ${nowStripHTML()}
   <div class="glass rows rv" style="--i:1">${accountRowsHTML()}</div>
-  ${musicCardHTML()}
   ${funnelHTML()}
   ${liveCardHTML()}
   <div class="sec rv" style="--i:1"><h2>Today</h2><small>goals adapt to your average</small></div>
@@ -1059,10 +1058,10 @@ function openLive(){
   const cv = bd.querySelector("canvas"); cv._on = 0; miniGlobe(cv);
 }
 function accountRowsHTML(){
-  return keys().map(k => { const a = data.accounts[k], s = series(k, data.updated - 86400), ch = (data.today||{}).gain?.[k] ?? (s.length > 1 ? s[s.length-1][1]-s[0][1] : null);
+  return keys().map(k => { const a = data.accounts[k], s = series(k, data.updated - 86400), ch = k === "spotify" ? a.dayChange ?? null : (data.today||{}).gain?.[k] ?? (s.length > 1 ? s[s.length-1][1]-s[0][1] : null);
     let sp = ""; if(s.length > 1){ const ys = s.map(p=>p[1]), x0 = s[0][0], x1 = s[s.length-1][0], y0 = Math.min(...ys), y1 = Math.max(...ys);
       sp = `<svg class="rspark" viewBox="0 0 80 28" preserveAspectRatio="none"><path d="${s.map((p,i)=>(i?"L":"M")+((p[0]-x0)/(x1-x0||1)*80).toFixed(1)+","+(y1===y0?14:26-(p[1]-y0)/(y1-y0)*24).toFixed(1)).join("")}" stroke="${ch>0?"#35e08f":ch<0?"#ff6b7a":"#8b93a8"}"/></svg>`; }
-    return `<button class="arow2" data-acct="${k}"><span class="rlogo" style="background:${G(k)}">${ICON[k]}</span><span class="rname"><b>${META[k].label}</b><small>${esc(a.name||"")}</small></span>${sp}
+    return `<button class="arow2" data-acct="${k}"><span class="rlogo" style="background:${G(k)}">${ICON[k]}</span><span class="rname"><b>${META[k].label}</b><small>${k === "spotify" && a.monthly ? fmt(a.monthly) + " monthly listeners" : esc(a.name||"")}</small></span>${sp}
       <span class="rnum"><b class="num">${fmt(a.followers)}</b><small class="${ch>0?"up":ch<0?"down":""}">${ch==null?"–":(ch>0?"+":"")+fmt(ch)} today</small></span></button>`; }).join("");
 }
 /* live-activity card (top of Home): newest post live + countdown to the autopilot's next post */
@@ -1122,7 +1121,7 @@ function accountsPage(){
     return `<div class="wcard" data-k="${k}" data-i="${i}" style="--g:${G(k)};--c:${C(k)}">
       ${walletSpark(k)}
       <div class="wtop"><div class="wlogo">${ICON[k]}</div><div class="wname"><b>${m.label}${m.sub?` · <span>${m.sub}</span>`:""}</b><span>${esc(a.name||"")}</span></div></div>
-      <div class="wnum"><small>Followers</small><span class="num wroll" data-k="${k}" data-key="w-${k}"></span></div>
+      <div class="wnum"><small>${k === "spotify" && a.monthly ? fmt(a.monthly) + " monthly listeners · followers" : "Followers"}</small><span class="num wroll" data-k="${k}" data-key="w-${k}"></span></div>
       <div class="wd">${a.error ? `<span class="chip">⚠ not refreshing</span>` : deltaChip(a.followers, past(k,86400))}</div>
     </div>`; }).join("")}<div class="wdetail" id="wdetail"></div></div>
     <div class="hint" id="whint">${walletSel ? "Tap the card or drag it down to put it back" : "Tap a card to open it"}</div>`;
@@ -1134,6 +1133,7 @@ function walletSpark(k){
   return `<svg class="wspark" viewBox="0 0 300 70" preserveAspectRatio="none"><path d="${d}L300,70L0,70Z" fill="rgba(255,255,255,.18)"/><path d="${d}" fill="none" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
 }
 function walletDetail(k){
+  if(k === "spotify") return `<div id="mwrap"></div><a class="bigbtn" style="--g:var(--g-spotify)" href="https://open.spotify.com/artist/1WrulTTCAks29SRap2d6LH" target="_blank" rel="noopener">Open Spotify ↗</a>`;
   const a = data.accounts[k], posts = a.posts || [], m = META[k];
   const views = posts.reduce((s,p)=>s+(p.views||0),0), likes = posts.reduce((s,p)=>s+(p.likes||0),0);
   return `<div class="trio"><div>Recent views<b>${fmt(views)}</b></div><div>Recent likes<b>${fmt(likes)}</b></div><div>${a.views_total!=null?"All-time views":"Posts"}<b>${fmt(a.views_total ?? a.posts_total ?? posts.length)}</b></div></div>
@@ -1152,6 +1152,7 @@ function layoutWallet(){
     cards.forEach(c => { if(c.dataset.k === walletSel){ c.style.transform = "translateY(0) scale(1)"; c.style.opacity = 1; c.style.zIndex = 50; }
       else { c.style.transform = `translateY(${innerHeight*.9 + j*14}px) scale(.92)`; c.style.opacity = 0; c.style.zIndex = j+1; j++; } });
     const det = $("wdetail"); det.innerHTML = walletDetail(walletSel); det.style.top = (H + 14) + "px";
+    if(walletSel === "spotify") openMusic(det.querySelector("#mwrap"));
     w.style.height = (H + 14 + det.offsetHeight) + "px";
   }
   w.classList.toggle("sel", !!walletSel); const hint = $("whint"); if(hint) hint.textContent = walletSel ? "Tap the card or drag it down to put it back" : "Tap a card to open it";
@@ -1248,7 +1249,14 @@ function areaSVG(k, s, color = C(k)){
 /* ================= render + motion ================= */
 let firstPaint = true, instant = false;
 const ringPrev = {};
+function enrichSpotify(){
+  if(!data.s4a) return; const sp = data.accounts.spotify || (data.accounts.spotify = {name: "wslyy", url: "https://open.spotify.com/artist/1WrulTTCAks29SRap2d6LH"});
+  const tl = data.s4a.timeline || [], t = tl[tl.length-1], y = tl[tl.length-2];
+  if(sp.followers == null && t) sp.followers = t[3]; sp.monthly = t ? t[4] : null; sp.dayChange = t && y ? t[3] - y[3] : null; delete sp.error; delete sp.stale;
+  if(!sp.url) sp.url = "https://open.spotify.com/artist/1WrulTTCAks29SRap2d6LH";
+}
 function render(){
+  enrichSpotify();
   $("lock").classList.add("hide"); $("app").classList.remove("hide");
   $("upd").textContent = "Live · updated " + ago(data.updated); $("live").classList.toggle("stale", Date.now()/1000 - data.updated > 20*60);
   const h = new Date().getHours(); $("hello").textContent = (h<5?"Up late":h<12?"Good morning":h<18?"Good afternoon":"Good evening") + ", wslyy";
@@ -1873,10 +1881,10 @@ function musicCardHTML(){
   return `<button class="glass mcard rv" style="--i:2" id="openmusic">${pop != null ? `<svg class="pring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" stroke="rgba(255,255,255,.1)"/><circle cx="22" cy="22" r="18" pathLength="100" stroke="#1db954" stroke-dasharray="${pop} 100"/><text x="22" y="26" text-anchor="middle">${pop}</text></svg>` : ""}
     <span class="mtx"><b>Your music</b><small>${[data.s4a && (data.s4a.timeline||[]).length && `${fmt((data.s4a.timeline.slice(-1)[0]||[])[4])} monthly listeners`, sp && sp.followers != null && `Spotify ${fmt(sp.followers)}`, mi && `IG ${fmt(mi.followers)}`, mf && `FB ${fmt(mf.followers)}`].filter(Boolean).join(" · ")}</small></span><em>Open ›</em></button>`;
 }
-function openMusic(){
-  const m = $("music"), sp = data.accounts.spotify || {}, posts = sp.posts || [], rel = (sp.releases || []).slice().sort((a,b) => (b.ts||"").localeCompare(a.ts||""));
+function openMusic(target){
+  const m = $("music"), host = target || m.querySelector(".mbody"), sp = data.accounts.spotify || {}, posts = sp.posts || [], rel = (sp.releases || []).slice().sort((a,b) => (b.ts||"").localeCompare(a.ts||""));
   const tot = ["spotify","musicig","musicfb"].reduce((a,k) => a + ((data.accounts[k]||{}).followers || 0), 0);
-  m.querySelector(".mbody").innerHTML = `
+  host.innerHTML = `
     <div class="mhero">${sp.avatar ? `<img src="${esc(sp.avatar)}" alt="">` : ""}<div><small>Music · all platforms</small><b class="num" id="mtot"></b><span>followers</span></div></div>
     <div class="mstats">${["spotify","musicig","musicfb"].filter(k => data.accounts[k]).map(k => `<div style="--g:${G(k)}"><i>${ICON[k]}</i><b>${fmt(data.accounts[k].followers)}</b><small>${META[k].label} · ${META[k].sub}</small></div>`).join("")}
       ${sp.popularity != null ? `<div style="--g:var(--g-spotify)"><i>🔥</i><b>${sp.popularity}<small>/100</small></b><small>Spotify popularity</small></div>` : ""}</div>
@@ -1884,7 +1892,7 @@ function openMusic(){
     ${s4aHTML()}
     ${rel.length ? `<div class="sec"><h2>Discography</h2><small>swipe · tap to relaunch</small></div><div class="wall" id="wall">${rel.map((r,i) => `<button class="wc" data-i="${i}"><img src="${esc(r.thumb||"")}" alt=""><b>${esc(r.title)}</b><small>${esc(r.kind)} · ${esc((r.ts||"").slice(0,4))}</small></button>`).join("")}</div>` : ""}
     ${posts.length ? `<div class="sec"><h2>Song heat</h2><small>Spotify popularity, live</small></div><div class="glass">${posts.slice(0,20).map(t => `<a class="heat" href="${esc(t.url)}" target="_blank" rel="noopener"><img src="${esc(t.thumb||"")}" alt=""><span><b>${esc(t.title)}</b><i class="meter"><em style="--p:${t.pop}%;--h:${Math.round(200 - t.pop*2)}"></em></i></span><strong style="color:hsl(${Math.round(200 - t.pop*2)},90%,62%)">${t.pop}</strong></a>`).join("")}</div>` : ""}`;
-  m.classList.add("open"); m.scrollTop = 0; delete rollMem.mtot; roll($("mtot"), tot, full, "#1db954");
+  if(!target){ m.classList.add("open"); m.scrollTop = 0; } delete rollMem.mtot; roll($("mtot"), tot, full, "#1db954");
   const wall = $("wall"); if(wall){ const place = () => { const r = wall.getBoundingClientRect(), c = r.left + r.width/2;   // 3D cover flow
       wall.querySelectorAll(".wc").forEach(el => { const b = el.getBoundingClientRect(), d = clamp((b.left + b.width/2 - c)/r.width*2, -1.4, 1.4);
         el.style.transform = `perspective(700px) rotateY(${-d*48}deg) translateZ(${-Math.abs(d)*90}px) scale(${1 - Math.abs(d)*.08})`; el.style.zIndex = 100 - Math.round(Math.abs(d)*50); }); };
