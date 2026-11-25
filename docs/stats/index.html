@@ -543,6 +543,9 @@ nav,.iconbtn,#mini{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(
 @keyframes lpulse{from{transform:scale(1.6);opacity:0}30%{opacity:1}to{transform:scale(.9);opacity:.2}}
 .lkind{font-size:12px;letter-spacing:.2em;color:#9fd9b4;margin-top:20px;opacity:0}.ltitle{font-size:28px;font-weight:800;margin:4px 0 16px;opacity:0}
 #launch.go .lkind,#launch.go .ltitle,#launch.go .lopen{animation:fadein .6s 2.9s both}
+.dotkey{display:flex;gap:9px;flex-wrap:wrap;font-style:normal;font-size:10.5px;color:var(--dim);margin-top:3px}.dotkey u,.wkey u{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
+.wkey{position:absolute;top:98px;left:12px;z-index:2;display:flex;flex-direction:column;gap:4px;font-size:11px;color:#dfe3f0;background:rgba(10,12,22,.55);padding:6px 9px;border-radius:10px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#bell.on{color:#35e08f}
 /* calmer, cleaner overall */
 #field.on{opacity:.75}
 .rv{transform:translateY(12px) scale(.99)}
@@ -637,7 +640,7 @@ body.calm .rv{opacity:1;transform:none}
         <h1 id="ptitle">Your <span>empire</span></h1>
         <div class="live" id="live"><i></i><span id="upd">Loading…</span></div>
       </div>
-      <button class="iconbtn" id="ref" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+      <button class="iconbtn" id="bell" aria-label="Notifications" style="margin-right:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button><button class="iconbtn" id="ref" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
     </header>
     <main id="main">
       <section class="page" id="p-home"></section>
@@ -647,7 +650,7 @@ body.calm .rv{opacity:1;transform:none}
       <section class="page" id="p-world">
         <div class="world rv" style="--i:0" id="world"><canvas></canvas>
           <div class="wtop"><form id="wsearch"><input type="search" placeholder="Search a city or country" enterkeyhint="search" autocomplete="off"></form><button class="iconbtn" id="whome" aria-label="Fly home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg></button></div>
-          <div class="wchip" id="wawake"></div><div class="wblink" id="wblink"></div><div class="wmsg" id="wmsg">Loading the globe…</div>
+          <div class="wchip" id="wawake"></div><div class="wkey"><span><u style="background:#ff4f9a"></u>@wslyyofficial</span><span><u style="background:#a970ff"></u>@wslyymusic</span></div><div class="wblink" id="wblink"></div><div class="wmsg" id="wmsg">Loading the globe…</div>
           <div class="wfocus" id="wfocus"></div>
         </div>
         <div class="sec rv" style="--i:1"><h2>Where your audience is</h2><small>Instagram · tap to fly</small></div>
@@ -729,6 +732,24 @@ async function decrypt(box, pw){
   const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(box.salt), iterations:box.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
   return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(box.iv)}, key, b64(box.ct))));
 }
+let lastBox = null;
+const WORKER = "https://wslyy-stats.wslyy.workers.dev";
+async function enablePush(){
+  const b = $("bell");
+  try{
+    if(!("serviceWorker" in navigator) || !("PushManager" in window)) throw new Error("On iPhone, notifications work once the app is added to your Home Screen (iOS 16.4 or later). Open it from the Home Screen icon and tap the bell again.");
+    if(await Notification.requestPermission() !== "granted") throw new Error("Notifications are switched off for this app. Turn them on in iPhone Settings → Notifications → My Stats.");
+    const reg = await navigator.serviceWorker.ready, { pub } = await (await fetch(WORKER + "/vapid")).json();
+    const key = Uint8Array.from(atob(pub.replace(/-/g,"+").replace(/_/g,"/") + "===".slice((pub.length+3)%4)), c => c.charCodeAt(0));
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: key});
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveBits"]);   // proves this phone knows your passphrase
+    const raw = new Uint8Array(await crypto.subtle.deriveBits({name: "PBKDF2", salt: b64(lastBox.salt), iterations: lastBox.iter, hash: "SHA-256"}, base, 256));
+    const rk = btoa(String.fromCharCode(...raw)), auth = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rk)))].map(x => x.toString(16).padStart(2,"0")).join("");
+    const r = await fetch(WORKER + "/subscribe", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({sub, auth, test: true})});
+    if(!r.ok) throw new Error("The stats server didn't accept this phone (" + r.status + ")");
+    b.classList.add("on"); store.set("stats_push", "1"); pill({type: "push", k: "instagram", t: Date.now()/1000});
+  }catch(e){ alert(e.message || e); }
+}
 async function load(){
   $("ref").classList.add("spin"); $("upd").textContent = "Refreshing…"; $("glowframe").classList.add("on");
   const ty = $("typing"); if(ty) ty.classList.remove("hide");
@@ -739,7 +760,7 @@ async function load(){
       catch(e){ lastErr = e; }
     }
     if(!box) throw lastErr;
-    data = await decrypt(box, pass);
+    data = await decrypt(box, pass); lastBox = box;
     store.set("stats_pass", pass);
     if(new URLSearchParams(location.hash.slice(1)).get("k") !== pass) history.replaceState(null, "", "#k=" + encodeURIComponent(pass));
     try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
@@ -854,6 +875,8 @@ function evText(e){
   if(e.type === "milestone") return [`${L} passed ${fmt(e.m)} followers`, "New milestone unlocked"];
   if(e.type === "postMilestone") return [`Post passed ${fmt(e.m)} views`, `${L} · ${e.title || ""}`];
   if(e.type === "newPost") return [`New post is live`, `${L} · ${e.title || ""}`];
+  if(e.type === "push") return ["Notifications are on 🔔", "Milestones, releases and posts taking off"];
+  if(e.type === "newRelease") return ["New release on Spotify", e.title || ""];
   return [e.type, L];
 }
 function pill(e){ pillQ.push(e); if(!pillBusy) nextPill(); }
@@ -962,7 +985,7 @@ function nowStripHTML(){
   let other = 0; for(const h of Object.values(H)){ if(igr.includes(h.k)) continue; const p = h.pts; if(p.length < 2) continue; const l = p[p.length-1], pr = [...p].reverse().find(x => x[0] <= l[0]-900) || p[0]; other += Math.max(0, l[1]-pr[1]); }
   liveRate = igr.length ? igSum + other/15 : v15/15;
   return `<button class="glass livebar rv" style="--i:1" id="openlive"><canvas class="mglobe" width="120" height="120"></canvas>
-      <span><b class="num" id="viewers">–</b><small>watching now · <span id="vpm">–</span> views a minute, all accounts</small></span><em>Live view ›</em></button>
+      <span><b class="num" id="viewers">–</b><small>watching now · <span id="vpm">–</span> views a minute, all accounts</small><i class="dotkey">${Object.entries(DOT).filter(([k]) => placesFor(k).length).map(([k, c]) => `<u style="background:${c}"></u>${k === "musicig" ? "Music" : META[k].label}`).join("")}</i></span><em>Live view ›</em></button>
     <div class="glass now rv" style="--i:1"><div class="nlive"><i></i>Right now</div>
     <div class="ncell"><b class="num roll" data-key="n15" data-v="${v15}"></b><small>views · last 15 min</small></div>
     <div class="ncell"><b class="num roll" data-key="n1h" data-v="${f1 ?? ""}"></b><small>followers · last hour</small></div>
@@ -982,8 +1005,11 @@ function tickBy1(el, to){   // count up one at a time for small changes, like a 
   let n = from; clearInterval(el._ti); el._ti = setInterval(() => { n++; el.textContent = full(n); if(n >= to) clearInterval(el._ti); }, Math.max(25, 1400/(to-from)));
 }
 function miniGlobe(cv){   // light 2D orthographic globe: audience dots + sessions popping where views come from
-  if(!cv || cv._on) return; cv._on = 1; const x = cv.getContext("2d"), W = cv.width, r = W/2 - 4, ps = places(), mx = Math.max(1, ...ps.map(p => p.v)), pops = [];
-  const pick = () => { let t = Math.random()*ps.reduce((s,p)=>s+p.v,0); for(const p of ps){ t -= p.v; if(t <= 0) return p; } return ps[0]; };
+  if(!cv || cv._on) return; cv._on = 1; const x = cv.getContext("2d"), W = cv.width, r = W/2 - 4, pops = [];
+  const groups = Object.keys(DOT).map(k => ({k, ps: placesFor(k)})).filter(g => g.ps.length), ps = groups.flatMap(g => g.ps.map(p => ({...p, g: g.k}))), mx = Math.max(1, ...ps.map(p => p.v));
+  const share = k => { const R = (data && data.rates) || {}; return k === "wezla" ? 2 : (R[k] || (k === "instagram" ? 10 : 1)); };
+  const pick = () => { const tot = groups.reduce((a,g) => a + share(g.k), 0); let t = Math.random()*tot, g = groups[0]; for(const gg of groups){ t -= share(gg.k); if(t <= 0){ g = gg; break; } }
+    const sum = g.ps.reduce((a,p)=>a+p.v,0); let u = Math.random()*sum; for(const p of g.ps){ u -= p.v; if(u <= 0) return {...p, g: g.k}; } return {...g.ps[0], g: g.k}; };
   let rot = -20, last = performance.now(), nextPop = 0;
   // real Earth: NASA Blue Marble (day) + Black Marble (night lights), lit by the sun's real position
   const S = Math.min(W, 200), off = document.createElement("canvas"); off.width = off.height = S; const ox = off.getContext("2d"), img = ox.createImageData(S, S);
@@ -1009,10 +1035,10 @@ function miniGlobe(cv){   // light 2D orthographic globe: audience dots + sessio
     x.strokeStyle = "rgba(120,180,255,.55)"; x.lineWidth = 1.5; x.beginPath(); x.arc(W/2, W/2, r, 0, 7); x.stroke();
     x.shadowColor = "rgba(90,160,255,.8)"; x.shadowBlur = 10; x.stroke(); x.shadowBlur = 0;
     const proj = (lat, lon) => { const la = lat*Math.PI/180, lo = (lon + rot)*Math.PI/180, z = Math.cos(la)*Math.cos(lo); return z < 0 ? null : [W/2 + r*Math.cos(la)*Math.sin(lo), W/2 - r*Math.sin(la), z]; };
-    for(const p of ps){ const q = proj(p.lat, p.lon); if(!q) continue; x.fillStyle = `rgba(255,90,160,${.35 + .65*q[2]})`; x.beginPath(); x.arc(q[0], q[1], 1.2 + 3*Math.sqrt(p.v/mx), 0, 7); x.fill(); }
+    for(const p of ps){ const q = proj(p.lat, p.lon); if(!q) continue; x.globalAlpha = .35 + .65*q[2]; x.fillStyle = DOT[p.g]; x.beginPath(); x.arc(q[0], q[1], 1.2 + 3*Math.sqrt(p.v/mx), 0, 7); x.fill(); } x.globalAlpha = 1;
     if(ps.length && now > nextPop){ pops.push({p: pick(), t: now}); nextPop = now + clamp(60000/Math.max(1, liveRate*8), 250, 2500); }
     for(let i = pops.length-1; i >= 0; i--){ const a = pops[i], k = (now - a.t)/1600, q = proj(a.p.lat, a.p.lon); if(k > 1){ pops.splice(i,1); continue; } if(!q) continue;
-      x.strokeStyle = `rgba(53,224,143,${1-k})`; x.lineWidth = 2; x.beginPath(); x.arc(q[0], q[1], 3 + k*14, 0, 7); x.stroke(); x.fillStyle = "#35e08f"; x.beginPath(); x.arc(q[0], q[1], 2.4, 0, 7); x.fill(); }
+      x.globalAlpha = 1-k; x.strokeStyle = DOT[a.p.g]; x.lineWidth = 2; x.beginPath(); x.arc(q[0], q[1], 3 + k*14, 0, 7); x.stroke(); x.globalAlpha = 1; x.fillStyle = DOT[a.p.g]; x.beginPath(); x.arc(q[0], q[1], 2.6, 0, 7); x.fill(); }
     if(!reduce) requestAnimationFrame(frame); };
   requestAnimationFrame(frame);
 }
@@ -1554,6 +1580,16 @@ function places(){   // cities when Instagram gives them, plus countries not alr
   for(const [cc, v] of au.countries || []) if(CC[cc]) out.push({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"});
   return out;
 }
+function placesFor(k){   // audience places for an account: Instagram cities/countries, or wezla's YouTube countries
+  if(k === "instagram") return places();
+  if(k === "musicig"){ const au = data && data.audienceMusic; if(!au) return [];
+    const out = (au.cities || []).map(([nm, v, lat, lon, cc]) => ({name: nm.split(",")[0], full: nm, v, lat, lon, cc, kind: "city"}));
+    for(const [cc, v] of au.countries || []) if(CC[cc] && !out.some(o => o.cc === cc)) out.push({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"});
+    return out; }
+  if(k === "wezla"){ const yc = data && data.ytCountries; return yc ? (yc.countries || []).filter(([cc]) => CC[cc]).map(([cc, v]) => ({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"})) : []; }
+  return [];
+}
+const DOT = {instagram: "#ff4f9a", musicig: "#b07cff", wezla: "#ffae2b"};
 function worldList(){
   const el = $("wplaces"); if(!el || !data) return; const au = data.audience;
   if(!au || !(au.countries||[]).length){ el.innerHTML = `<div class="empty">Your audience map appears after the next stats refresh (Instagram shares it a few times a day).</div>`; return; }
@@ -1636,9 +1672,9 @@ async function globe(){
   gr.addColorStop(0,"rgba(255,255,255,1)"); gr.addColorStop(.25,"rgba(255,150,200,.9)"); gr.addColorStop(1,"rgba(255,80,160,0)"); gx.fillStyle = gr; gx.fillRect(0,0,64,64);
   const glowT = new THREE.CanvasTexture(gc);
   // audience towers
-  const ps = places(), mx = Math.max(1, ...ps.map(p => p.v)), markers = [];
+  const ps0 = places(), psM = placesFor("musicig").map(p => ({...p, music: true})), ps = [...ps0, ...psM], mx = Math.max(1, ...ps.map(p => p.v)), markers = [];
   ps.forEach((p, i) => {
-    const h = .02 + .3*Math.sqrt(p.v/mx), up = ll(p.lat, p.lon).normalize(), col = new THREE.Color().setHSL((330 + (1-p.v/mx)*50)/360 % 1, .95, .62);
+    const h = .02 + .3*Math.sqrt(p.v/mx), up = ll(p.lat, p.lon).normalize(), col = p.music ? new THREE.Color("#a970ff") : new THREE.Color().setHSL((330 + (1-p.v/mx)*50)/360 % 1, .95, .62);
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(.0035, .006, 1, 8, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: .85, blending: THREE.AdditiveBlending, depthWrite: false}));
     beam.position.copy(up.clone().multiplyScalar(1 + h/2)); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), up); beam.scale.y = .001;
     const tip = new THREE.Sprite(new THREE.SpriteMaterial({map: glowT, color: col, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true}));
@@ -1661,8 +1697,8 @@ async function globe(){
   const meteor = n => { for(let i=0;i<Math.min(n,8);i++) setTimeout(() => { const m = document.createElement("i"); m.className = "meteor";
       m.style.left = (20 + Math.random()*80) + "%"; m.style.top = (Math.random()*35) + "%"; m.style.setProperty("--a", (200 + Math.random()*25) + "deg"); host.appendChild(m); setTimeout(() => m.remove(), 1400); }, i*260); };
   // camera: lat/lon/dist around the earth, flights arc up and back down
-  const home = ps.find(p => p.cc === "GB") || {lat: 51.5, lon: -.12, name: "London"};
-  const top = ps[0] || home;
+  const home = ps0.find(p => p.cc === "GB") || {lat: 51.5, lon: -.12, name: "London"};
+  const top = ps0[0] || home;
   let cam = {lat: top.lat - 8, lon: top.lon + 150, dist: 70}, fly = null, idleAt = 0, drag = null;
   const pinch = new Map();
   const flyTo = (lat, lon, dist = 2.1, dur = 2.4, then) => { fly = {from: {...cam}, to: {lat, lon, dist}, t0: performance.now(), dur: (reduce ? .01 : dur)*1000, then}; idleAt = performance.now(); };
@@ -1884,7 +1920,7 @@ function showLock(msg, shake){
 }
 $("go").onclick = () => { const v = $("pw").value.trim().toLowerCase(); if(!v) return; pass = v; $("lockerr").textContent = "Unlocking…"; load(); };
 $("pw").onkeydown = e => { if(e.key === "Enter") $("go").click(); };
-$("ref").onclick = load;
+$("ref").onclick = load; $("bell").onclick = enablePush; if(store.get("stats_push")) $("bell").classList.add("on");
 document.addEventListener("visibilitychange", () => { if(!document.hidden && pass) load(); });
 setInterval(() => { if(!document.hidden && pass) load(); }, 60000);
 
