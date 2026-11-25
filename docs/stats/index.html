@@ -555,6 +555,17 @@ nav,.iconbtn,#mini{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(
 @keyframes drop{0%{transform:translateY(0)}20%{transform:translateY(12vh)}22%{transform:translateY(12vh) translateX(1px)}100%{transform:translateY(112vh) translateX(-3px)}}
 body.night #field{filter:brightness(.75) saturate(.9)}
 body.night .shell{filter:brightness(.94) sepia(.06)}
+#tsq{position:fixed;inset:0;z-index:80;background:#000;display:none}
+#tsq.open{display:block}
+#tsq canvas{width:100%;height:100%;display:block}
+.tflash{position:absolute;inset:0;background:radial-gradient(circle,#fff,#c9d4ee);opacity:0;pointer-events:none}
+.tcap{position:absolute;left:0;right:0;bottom:calc(var(--bot) + 70px);text-align:center;opacity:0;transform:translateY(20px);transition:all .9s var(--out);text-shadow:0 4px 30px rgba(0,0,0,.8)}
+.tcap.on{opacity:1;transform:none}
+.tcap small{display:block;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#ffd1e6}
+.tcap b{display:block;font-size:72px;font-weight:900;letter-spacing:-.05em;line-height:1}
+.tcap span{font-size:15px;color:#e5e8f5}
+.tskip{position:absolute;top:calc(var(--top) + 16px);right:16px;font-size:12px;color:rgba(255,255,255,.6)}
+.playshot{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--g-hero)}
 /* calmer, cleaner overall */
 #field.on{opacity:.75}
 .rv{transform:translateY(12px) scale(.99)}
@@ -689,6 +700,7 @@ body.calm .rv{opacity:1;transform:none}
 <div id="music"><div class="mtop"><b>Your music</b><button class="iconbtn" id="mclose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="mbody"></div></div>
 <div id="launch"><div class="lbg"></div><button class="iconbtn" id="lclose" aria-label="Close" style="position:absolute;top:calc(var(--top) + 12px);right:14px;z-index:3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   <div class="lin"><div class="lcount">3</div><img class="lcover" alt=""><div class="lkind"></div><div class="ltitle"></div><a class="bigbtn lopen" style="--g:var(--g-spotify)" target="_blank" rel="noopener">Listen on Spotify ↗</a></div></div>
+<div id="tsq"><canvas></canvas><div class="tflash"></div><div class="tcap"></div><div class="tskip">Tap to close</div></div>
 <div id="rainfx"></div>
 <div id="glowframe"></div>
 <div id="bigday"><button class="iconbtn bdx" id="bdclose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
@@ -1194,7 +1206,7 @@ function growthPage(){
     <div class="rwseg" id="rwrange">${["1D","1W","1M","All"].map(r => `<button data-rr="${r}" class="${rwRange===r?"on":""}">${r}</button>`).join("")}</div>
     <div class="chips" id="rwacct" style="margin-top:10px"><button class="fchip ${rwAcct==="all"?"on":""}" data-ra="all">All</button>${ks.map(k => `<button class="fchip ${rwAcct===k?"on":""}" data-ra="${k}"><i style="background:${C(k)}"></i>${META[k].label}</button>`).join("")}</div>
   </div>
-  <div class="sec rv" style="--i:2"><h2>Trophy shelf</h2><small>tap a medal</small></div>
+  <div class="sec rv" style="--i:2"><h2>Trophy shelf</h2><button class="playshot" id="playshot">▶ Milestone shot</button></div>
   <div class="glass stage3d shelf rv" style="--i:3" id="shelf"><div class="loading">Loading trophies…</div><canvas></canvas></div>
   <div class="chips rv" style="--i:4;margin-top:22px">${["24h","7d","30d","all"].map(r => `<button class="fchip ${range===r?"on":""}" data-r="${r}">${r==="all"?"All time":r}</button>`).join("")}</div>
   <div style="margin-top:10px">${charts}</div>`;
@@ -1283,7 +1295,7 @@ function render(){
   if(seenEv === 0) seenEv = maxId; // first run: don't replay history
   evs.filter(e => e.id > seenEv).slice(-3).forEach(pill);
   const newMile = evs.filter(e => e.type === "milestone" && e.id > seenMile).pop();
-  if(newMile && seenMile) setTimeout(() => reveal(newMile.k, newMile.m), 1200);
+  if(newMile && seenMile) setTimeout(() => milestoneShot(newMile.k, newMile.m).then(() => reveal(newMile.k, newMile.m)), 1200);
   const nr = evs.filter(e => e.type === "newRelease" && e.id > seenEv).pop();
   if(nr && seenEv) setTimeout(() => launch(nr), 900);
   else if(isRecordDay() && store.get("stats_bigday") !== (data.today||{}).date){ store.set("stats_bigday", (data.today||{}).date); setTimeout(openLive, 1500); }   // record day: open the live screen once
@@ -1316,7 +1328,7 @@ function animatePage(id){
     const ar = page.querySelector("#arings"); if(ar && !reduce) setTimeout(() => sparks(ar), 1500);
   }));
   if(id === "accounts") layoutWallet();
-  if(id === "growth"){ rewind(true); setTimeout(shelf, 380); }
+  if(id === "growth"){ rewind(true); setTimeout(shelf, 380); const ps = $("playshot"); if(ps) ps.onclick = () => { const b = biggestMilestone(); if(b) milestoneShot(b.k, b.m); }; }
   if(id === "home"){ page.querySelectorAll(".now .roll").forEach(el => { const v = el.dataset.v === "" ? null : +el.dataset.v, m = rollMem[el.dataset.key];
       if(m && v != null && v > m.v && v - m.v <= 150){ el.classList.remove("roll"); el._tv = m.v; tickBy1(el, v); rollMem[el.dataset.key] = {s: full(v), v}; } else roll(el, v, full); });
     miniGlobe(page.querySelector(".mglobe")); const ol = $("openlive"); if(ol) ol.onclick = openLive; const om = $("openmusic"); if(om) om.onclick = openMusic;
@@ -1952,6 +1964,105 @@ async function weather(){
   }catch(e){}
 }
 setTimeout(weather, 2500); setInterval(weather, 15*60000);
+
+/* ================= "Times Square" milestone shot: space → clouds → rainy night city → giant billboard ================= */
+async function milestoneShot(k, m){
+  const ov = $("tsq"), cv = ov.querySelector("canvas"), cap = ov.querySelector(".tcap"); ov.classList.add("open"); cap.classList.remove("on");
+  cap.innerHTML = `<small>${esc(META[k] ? META[k].label + (META[k].sub ? " · " + META[k].sub : "") : k)}</small><b>${fmt(m)}</b><span>followers</span>`;
+  let done; const finished = new Promise(r => done = r), close = () => { ov.classList.remove("open"); stop = true; done(); };
+  ov.onclick = close; let stop = false;
+  try{
+  const THREE = await getThree();
+  const [{EffectComposer}, {RenderPass}, {UnrealBloomPass}, {OutputPass}, {Reflector}] = await Promise.all(["postprocessing/EffectComposer.js","postprocessing/RenderPass.js","postprocessing/UnrealBloomPass.js","postprocessing/OutputPass.js","objects/Reflector.js"]
+    .map(f => import("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" + f)));
+  const W = innerWidth, H = innerHeight, renderer = new THREE.WebGLRenderer({canvas: cv, antialias: true});
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)); renderer.setSize(W, H, false); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const cam = new THREE.PerspectiveCamera(50, W/H, .05, 3000);
+  const city = places()[0] || {lat: 40.71, lon: -74.01, name: "New York"};
+  const tl = new THREE.TextureLoader(), tex = u => new Promise(r => tl.load(u, t => { t.colorSpace = THREE.SRGBColorSpace; r(t); }, undefined, () => r(null)));
+  const NASA = "https://cdn.jsdelivr.net/npm/three-globe@2.45.6/example/img/";
+  const [dayT, nightT] = await Promise.all([tex(NASA + "earth-blue-marble.jpg"), tex(NASA + "earth-night.jpg")]);
+
+  // ---------- scene 1: space ----------
+  const space = new THREE.Scene(), ll = (lat, lon, r = 1) => { const p = (90-lat)*Math.PI/180, t = (lon+180)*Math.PI/180; return new THREE.Vector3(-r*Math.sin(p)*Math.cos(t), r*Math.cos(p), r*Math.sin(p)*Math.sin(t)); };
+  const [sl, so] = sunLatLon(new Date()), sun = ll(sl, so).normalize();
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 128), new THREE.ShaderMaterial({uniforms: {d: {value: dayT}, n: {value: nightT}, s: {value: sun}},
+    vertexShader: "varying vec2 u;varying vec3 nn;void main(){u=uv;nn=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+    fragmentShader: "uniform sampler2D d,n;uniform vec3 s;varying vec2 u;varying vec3 nn;void main(){float k=smoothstep(-.15,.2,dot(normalize(nn),s));vec3 c=mix(texture2D(n,u).rgb*vec3(1.,.85,.6)*2.4,texture2D(d,u).rgb*(.25+.9*max(dot(normalize(nn),s),0.)),k);gl_FragColor=vec4(c,1.);\n#include <colorspace_fragment>\n}"}));
+  space.add(earth);
+  space.add(new THREE.Mesh(new THREE.SphereGeometry(1.06, 64, 64), new THREE.ShaderMaterial({side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+    vertexShader: "varying vec3 vn;varying vec3 vv;void main(){vn=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vv=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}",
+    fragmentShader: "varying vec3 vn;varying vec3 vv;void main(){float i=pow(.72-dot(vn,vv),3.);gl_FragColor=vec4(.35,.65,1.,1.)*i*.6;}"})));
+  const sg = new THREE.BufferGeometry(), sp = []; for(let i=0;i<3000;i++){ const v = new THREE.Vector3().randomDirection().multiplyScalar(400 + Math.random()*400); sp.push(v.x, v.y, v.z); }
+  sg.setAttribute("position", new THREE.Float32BufferAttribute(sp, 3)); space.add(new THREE.Points(sg, new THREE.PointsMaterial({color: 0xdfe6ff, size: 1.2, sizeAttenuation: false})));
+  // cloud puffs the camera punches through
+  const pc = document.createElement("canvas"); pc.width = pc.height = 128; const px = pc.getContext("2d"), pg = px.createRadialGradient(64,64,0,64,64,64);
+  pg.addColorStop(0, "rgba(255,255,255,.9)"); pg.addColorStop(1, "rgba(255,255,255,0)"); px.fillStyle = pg; px.fillRect(0,0,128,128); const puffT = new THREE.CanvasTexture(pc);
+  const up = ll(city.lat, city.lon).normalize(), puffs = new THREE.Group(); space.add(puffs);
+  for(let i=0;i<70;i++){ const s = new THREE.Sprite(new THREE.SpriteMaterial({map: puffT, transparent: true, opacity: .55, depthWrite: false, color: 0xb9c4d8}));
+    const off = new THREE.Vector3().randomDirection().multiplyScalar(.035); s.position.copy(up.clone().multiplyScalar(1.02 + Math.random()*.03).add(off)); s.scale.setScalar(.02 + Math.random()*.04); puffs.add(s); }
+
+  // ---------- scene 2: rainy night city ----------
+  const town = new THREE.Scene(); town.fog = new THREE.FogExp2(0x0b0a1c, .018); town.background = new THREE.Color(0x07061a);
+  const winC = document.createElement("canvas"); winC.width = 64; winC.height = 128; const wx = winC.getContext("2d"); wx.fillStyle = "#07070d"; wx.fillRect(0,0,64,128);
+  for(let y=4;y<128;y+=8) for(let x=4;x<64;x+=8) if(Math.random() < .55){ wx.fillStyle = Math.random() < .7 ? `rgba(255,${190+Math.random()*50|0},${120+Math.random()*60|0},${.5+Math.random()*.5})` : "rgba(150,200,255,.8)"; wx.fillRect(x, y, 4, 5); }
+  const winT = new THREE.CanvasTexture(winC); winT.wrapS = winT.wrapT = THREE.RepeatWrapping; winT.repeat.set(2, 7); winT.colorSpace = THREE.SRGBColorSpace;
+  const bMat = new THREE.MeshStandardMaterial({color: 0x15161f, map: winT, emissive: 0xffffff, emissiveMap: winT, emissiveIntensity: 1.1, roughness: .6, metalness: .3});
+  const box = new THREE.BoxGeometry(1, 1, 1); box.translate(0, .5, 0);
+  const N = 260, inst = new THREE.InstancedMesh(box, bMat, N), m4 = new THREE.Matrix4(); let n = 0;
+  for(let gx=-7; gx<=7; gx++) for(let gz=-14; gz<=4; gz++){ if(n >= N) break; if(Math.abs(gx) < 1.3) continue;   // leave an avenue down the middle
+    const w = 2 + Math.random()*1.6, h = 4 + Math.pow(Math.random(), 1.6)*26, x = gx*4.4 + (Math.random()-.5), z = gz*4.4;
+    m4.compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion(), new THREE.Vector3(w, h, w)); inst.setMatrixAt(n++, m4); }
+  inst.count = n; town.add(inst);
+  // wet street: real mirror reflection under a dark, glossy asphalt tint
+  const mirror = new Reflector(new THREE.PlaneGeometry(200, 200), {textureWidth: W*.6|0, textureHeight: H*.6|0, color: 0x3a3a4a}); mirror.rotation.x = -Math.PI/2; town.add(mirror);
+  const asphalt = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({color: 0x08080c, roughness: .35, metalness: .2, transparent: true, opacity: .62}));
+  asphalt.rotation.x = -Math.PI/2; asphalt.position.y = .01; town.add(asphalt);
+  // the billboard tower + the milestone billboard
+  const tower = new THREE.Mesh(box, bMat); tower.scale.set(5, 22, 5); tower.position.set(0, 0, -30); town.add(tower);
+  const bc = document.createElement("canvas"); bc.width = 1024; bc.height = 600; const bx = bc.getContext("2d");
+  const bt = new THREE.CanvasTexture(bc); bt.colorSpace = THREE.SRGBColorSpace;
+  const drawBoard = t => { const g = bx.createLinearGradient(0,0,1024,600); g.addColorStop(0, "#4c1d95"); g.addColorStop(.5, "#db2777"); g.addColorStop(1, "#f59e0b");
+    bx.fillStyle = g; bx.fillRect(0,0,1024,600); bx.fillStyle = "rgba(0,0,0,.25)"; for(let y=0;y<600;y+=6) bx.fillRect(0, y, 1024, 2);
+    bx.fillStyle = "#fff"; bx.textAlign = "center"; bx.font = "800 54px -apple-system,system-ui,sans-serif"; bx.fillText((META[k] ? META[k].label : k).toUpperCase() + " · MILESTONE", 512, 120);
+    bx.font = "900 250px -apple-system,system-ui,sans-serif"; bx.shadowColor = "#fff"; bx.shadowBlur = 30; bx.fillText(full(Math.round(m * Math.min(1, t))), 512, 380); bx.shadowBlur = 0;
+    bx.font = "700 60px -apple-system,system-ui,sans-serif"; bx.fillText("FOLLOWERS", 512, 480); bx.font = "600 34px -apple-system,system-ui,sans-serif"; bx.fillText("thank you · " + new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}), 512, 550); bt.needsUpdate = true; };
+  drawBoard(0);
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(9, 5.3), new THREE.MeshBasicMaterial({map: bt, color: 0xc8c8c8, toneMapped: false})); board.position.set(0, 15, -27.4); town.add(board);
+  const spill = new THREE.PointLight(0xff4fa0, 120, 40, 1.6); spill.position.set(0, 12, -22); town.add(spill);
+  // side billboards + street lights
+  const cols = [0x22d3ee, 0xff9f0a, 0x8b5cf6, 0x35e08f];
+  for(let i=0;i<8;i++){ const side = i%2 ? 1 : -1, z = -4 - i*4.5, c = cols[i%4];
+    const ad = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3.2), new THREE.MeshBasicMaterial({color: c, toneMapped: false})); ad.position.set(side*3.6, 4 + Math.random()*6, z); ad.rotation.y = -side*Math.PI/2; town.add(ad);
+    if(i%2 === 0){ const l = new THREE.PointLight(c, 25, 14, 1.8); l.position.set(side*2.5, 3, z); town.add(l); } }
+  town.add(new THREE.AmbientLight(0x404070, .5));
+  // rain
+  const rg = new THREE.BufferGeometry(), rp = new Float32Array(1800*3); for(let i=0;i<1800;i++){ rp[i*3] = (Math.random()-.5)*40; rp[i*3+1] = Math.random()*30; rp[i*3+2] = -40 + Math.random()*55; }
+  rg.setAttribute("position", new THREE.BufferAttribute(rp, 3)); town.add(new THREE.Points(rg, new THREE.PointsMaterial({color: 0x9fb3ff, size: .06, transparent: true, opacity: .55})));
+
+  // post: bloom for neon + billboard glow
+  const comp = new EffectComposer(renderer), rpass = new RenderPass(space, cam); comp.addPass(rpass);
+  comp.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), .5, .5, .78)); comp.addPass(new OutputPass());
+  // ---------- one continuous camera move ----------
+  const path = new THREE.CatmullRomCurve3([new THREE.Vector3(-30, 60, 70), new THREE.Vector3(-10, 34, 30), new THREE.Vector3(4, 16, 8), new THREE.Vector3(0, 10, 6), new THREE.Vector3(0, 15, -27.4 + Math.max(12, 5.2/Math.tan(Math.atan(Math.tan(25*Math.PI/180)*W/H))))]);
+  const look = new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0, -20), new THREE.Vector3(0, 6, -25), new THREE.Vector3(0, 12, -27), new THREE.Vector3(0, 14, -27.4), new THREE.Vector3(0, 15, -27.4)]);
+  const flash = ov.querySelector(".tflash"), T1 = 3.6, T2 = 10.5, t0 = performance.now(); let swapped = false;
+  const ease = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2;
+  const frame = now => { if(stop){ renderer.dispose(); return; } const t = (now - t0)/1000;
+    if(t < T1){ const e = ease(t/T1), dist = 7 - 5.95*e, side = new THREE.Vector3(0,1,0).cross(up).normalize();
+      cam.position.copy(up.clone().multiplyScalar(dist).add(side.multiplyScalar((1-e)*2.5))); cam.up.set(0,1,0); cam.lookAt(up.clone().multiplyScalar(.98));
+      puffs.children.forEach(p => p.material.opacity = .55*Math.min(1, e*1.4)); flash.style.opacity = Math.max(0, (t - (T1 - .5))/.5); }
+    else { if(!swapped){ swapped = true; rpass.scene = town; } const e = ease(Math.min(1, (t - T1)/(T2 - T1)));
+      cam.position.copy(path.getPointAt(e)); cam.lookAt(look.getPointAt(e)); flash.style.opacity = Math.max(0, 1 - (t - T1)/.6);
+      const pos = rg.attributes.position; for(let i=0;i<pos.count;i++){ let y = pos.getY(i) - .5; if(y < 0) y = 30; pos.setY(i, y); } pos.needsUpdate = true;
+      if(t > T2 - 4) drawBoard((t - (T2 - 4))/2.2); spill.intensity = 110 + Math.sin(t*7)*12;
+      if(t > T2 - .4) cap.classList.add("on"); }
+    comp.render(); if(t < T2 + 6) requestAnimationFrame(frame); else close(); };
+  requestAnimationFrame(frame);
+  }catch(e){ cap.innerHTML = `<small>${esc(META[k] ? META[k].label : k)}</small><b>${fmt(m)}</b><span>followers</span>`; cap.classList.add("on"); setTimeout(close, 3500); }
+  return finished;
+}
+function biggestMilestone(){ const a = achieved()[0]; return a || null; }
 
 /* ================= tabs, swipe, lock, boot ================= */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.tab));
