@@ -549,6 +549,12 @@ nav,.iconbtn,#mini{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(
 .mlhero{padding:16px;margin-bottom:10px;background:linear-gradient(135deg,rgba(29,185,84,.25),rgba(29,185,84,.05))!important}
 .mlhero small{display:block;font-size:12px;color:#9fd9b4}.mlhero b{display:block;font-size:42px;font-weight:800;letter-spacing:-.04em;margin:2px 0}
 .mlhero span{font-size:13px;font-weight:700}.mlhero span.up{color:var(--up)}.mlhero span.down{color:var(--down)}.mlhero em{display:block;font-style:normal;font-size:13px;color:var(--dim);margin-top:4px}
+#rainfx{position:fixed;inset:0;z-index:15;pointer-events:none;opacity:0;transition:opacity 2s}
+#rainfx.on{opacity:1}
+#rainfx i{position:absolute;top:-8%;width:calc(5px*var(--s));height:calc(9px*var(--s));border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.55),rgba(255,255,255,.08) 60%,transparent 70%);box-shadow:0 1px 2px rgba(0,0,0,.25);backdrop-filter:blur(1px) brightness(1.25);-webkit-backdrop-filter:blur(1px) brightness(1.25);animation:drop linear infinite}
+@keyframes drop{0%{transform:translateY(0)}20%{transform:translateY(12vh)}22%{transform:translateY(12vh) translateX(1px)}100%{transform:translateY(112vh) translateX(-3px)}}
+body.night #field{filter:brightness(.75) saturate(.9)}
+body.night .shell{filter:brightness(.94) sepia(.06)}
 /* calmer, cleaner overall */
 #field.on{opacity:.75}
 .rv{transform:translateY(12px) scale(.99)}
@@ -683,6 +689,7 @@ body.calm .rv{opacity:1;transform:none}
 <div id="music"><div class="mtop"><b>Your music</b><button class="iconbtn" id="mclose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="mbody"></div></div>
 <div id="launch"><div class="lbg"></div><button class="iconbtn" id="lclose" aria-label="Close" style="position:absolute;top:calc(var(--top) + 12px);right:14px;z-index:3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   <div class="lin"><div class="lcount">3</div><img class="lcover" alt=""><div class="lkind"></div><div class="ltitle"></div><a class="bigbtn lopen" style="--g:var(--g-spotify)" target="_blank" rel="noopener">Listen on Spotify ↗</a></div></div>
+<div id="rainfx"></div>
 <div id="glowframe"></div>
 <div id="bigday"><button class="iconbtn bdx" id="bdclose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   <div class="bdtitle"><i></i>Today · live</div><canvas width="420" height="420"></canvas>
@@ -1471,7 +1478,7 @@ async function makeView(id, host){
   const THREE = await getThree(), cv = host.querySelector("canvas") || host;
   const renderer = new THREE.WebGLRenderer({canvas: cv, antialias: true, alpha: true});
   renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)); renderer.setSize(cv.clientWidth, cv.clientHeight, false);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.outputColorSpace = THREE.SRGBColorSpace;
   const scene = new THREE.Scene(); scene.environment = await env(renderer);
   const camera = new THREE.PerspectiveCamera(38, cv.clientWidth / cv.clientHeight, .1, 400);
   views3d[id] = {el: cv, renderer, fn: null};
@@ -1532,11 +1539,12 @@ function medalTexture(THREE, k, m){
 }
 function medal(THREE, k, m){
   const {tex, color} = medalTexture(THREE, k, m);
-  const face = new THREE.MeshStandardMaterial({map: tex, metalness: .75, roughness: .3});
-  const rim = new THREE.MeshStandardMaterial({color: new THREE.Color(color), metalness: 1, roughness: .22});
-  const coin = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .16, 80), [rim, face, face]); coin.rotation.x = Math.PI/2;
+  const face = new THREE.MeshPhysicalMaterial({map: tex, metalness: .85, roughness: .2, clearcoat: 1, clearcoatRoughness: .06, envMapIntensity: 1.4});
+  const rim = new THREE.MeshPhysicalMaterial({color: new THREE.Color(color), metalness: 1, roughness: .1, clearcoat: 1, clearcoatRoughness: .03, envMapIntensity: 1.8});
+  const coin = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .16, 96), [rim, face, face]);
+  const bevel = new THREE.Mesh(new THREE.TorusGeometry(1, .085, 24, 120), rim);   // polished rounded edge coin.rotation.x = Math.PI/2;
   const ring = new THREE.Mesh(new THREE.TorusGeometry(1.01, .05, 16, 90), new THREE.MeshStandardMaterial({color: new THREE.Color(META[k].hex), metalness: .8, roughness: .25, emissive: new THREE.Color(META[k].hex), emissiveIntensity: .35}));
-  const g = new THREE.Group(); g.add(coin, ring); return g;
+  const g = new THREE.Group(); g.add(coin, bevel, ring); return g;
 }
 const achieved = () => keys().flatMap(k => MILESTONES.filter(m => (data.accounts[k].followers||0) >= m).map(m => ({k, m}))).sort((a,b) => b.m - a.m);
 async function shelf(){
@@ -1932,6 +1940,18 @@ function launch(r){   // full-screen release moment: blurred cover, 3-2-1, 3D co
   L.querySelector(".lopen").href = r.url || "#"; const cd = L.querySelector(".lcount"); cd.classList.remove("now"); L.classList.remove("go"); void L.offsetWidth; L.classList.add("open", "go");
   let n = 3; cd.textContent = n; clearInterval(L._t); L._t = setInterval(() => { n--; cd.textContent = n > 0 ? n : "OUT NOW"; cd.classList.toggle("now", n <= 0); if(n <= 0) clearInterval(L._t); }, 700);
 }
+
+/* ================= live weather: rain on the glass + night dim, from your real location ================= */
+async function weather(){
+  const pos = await new Promise(r => navigator.geolocation ? navigator.geolocation.getCurrentPosition(p => r([p.coords.latitude, p.coords.longitude]), () => r([51.5, -.12]), {timeout: 5000, maximumAge: 36e5}) : r([51.5, -.12]));
+  try{ const w = (await (await fetch("https://api.open-meteo.com/v1/forecast?" + new URLSearchParams({latitude: pos[0].toFixed(2), longitude: pos[1].toFixed(2), current: "weather_code,is_day,precipitation"}))).json()).current;
+    const code = w.weather_code, rain = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95, heavy = code >= 63 && code <= 67 || code >= 81;
+    document.body.classList.toggle("night", w.is_day === 0); const fx = $("rainfx");
+    if(rain && !reduce){ if(!fx.childElementCount) for(let i=0;i<(heavy ? 70 : 34);i++){ const d = document.createElement("i"); d.style.cssText = `left:${Math.random()*100}%;animation-delay:${-Math.random()*6}s;animation-duration:${3 + Math.random()*4}s;--s:${.6 + Math.random()*.8}`; fx.appendChild(d); } fx.classList.add("on"); }
+    else { fx.classList.remove("on"); fx.innerHTML = ""; }
+  }catch(e){}
+}
+setTimeout(weather, 2500); setInterval(weather, 15*60000);
 
 /* ================= tabs, swipe, lock, boot ================= */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.tab));
