@@ -650,7 +650,7 @@ body.calm .rv{opacity:1;transform:none}
       <section class="page" id="p-world">
         <div class="world rv" style="--i:0" id="world"><canvas></canvas>
           <div class="wtop"><form id="wsearch"><input type="search" placeholder="Search a city or country" enterkeyhint="search" autocomplete="off"></form><button class="iconbtn" id="whome" aria-label="Fly home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg></button></div>
-          <div class="wchip" id="wawake"></div><div class="wkey"><span><u style="background:#ff4f9a"></u>@wslyyofficial</span><span><u style="background:#a970ff"></u>@wslyymusic</span></div><div class="wblink" id="wblink"></div><div class="wmsg" id="wmsg">Loading the globe…</div>
+          <div class="wchip" id="wawake"></div><div class="wkey"><span><u style="background:#ff4f9a"></u>@wslyyofficial</span><span><u style="background:#a970ff"></u>@wslyymusic</span><span><u style="background:#1db954"></u>Spotify listeners</span></div><div class="wblink" id="wblink"></div><div class="wmsg" id="wmsg">Loading the globe…</div>
           <div class="wfocus" id="wfocus"></div>
         </div>
         <div class="sec rv" style="--i:1"><h2>Where your audience is</h2><small>Instagram · tap to fly</small></div>
@@ -1007,7 +1007,7 @@ function tickBy1(el, to){   // count up one at a time for small changes, like a 
 function miniGlobe(cv){   // light 2D orthographic globe: audience dots + sessions popping where views come from
   if(!cv || cv._on) return; cv._on = 1; const x = cv.getContext("2d"), W = cv.width, r = W/2 - 4, pops = [];
   const groups = Object.keys(DOT).map(k => ({k, ps: placesFor(k)})).filter(g => g.ps.length), ps = groups.flatMap(g => g.ps.map(p => ({...p, g: g.k}))), mx = Math.max(1, ...ps.map(p => p.v));
-  const share = k => { const R = (data && data.rates) || {}; return k === "wezla" ? 2 : (R[k] || (k === "instagram" ? 10 : 1)); };
+  const share = k => { const R = (data && data.rates) || {}; return k === "wezla" ? 2 : k === "spotify" ? 3 : (R[k] || (k === "instagram" ? 10 : 1)); };
   const pick = () => { const tot = groups.reduce((a,g) => a + share(g.k), 0); let t = Math.random()*tot, g = groups[0]; for(const gg of groups){ t -= share(gg.k); if(t <= 0){ g = gg; break; } }
     const sum = g.ps.reduce((a,p)=>a+p.v,0); let u = Math.random()*sum; for(const p of g.ps){ u -= p.v; if(u <= 0) return {...p, g: g.k}; } return {...g.ps[0], g: g.k}; };
   let rot = -20, last = performance.now(), nextPop = 0;
@@ -1586,10 +1586,11 @@ function placesFor(k){   // audience places for an account: Instagram cities/cou
     const out = (au.cities || []).map(([nm, v, lat, lon, cc]) => ({name: nm.split(",")[0], full: nm, v, lat, lon, cc, kind: "city"}));
     for(const [cc, v] of au.countries || []) if(CC[cc] && !out.some(o => o.cc === cc)) out.push({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"});
     return out; }
+  if(k === "spotify"){ const sa = data && data.s4a; return sa ? (sa.cities || []).map(([nm, v, lat, lon, cc]) => ({name: nm, full: nm, v, lat, lon, cc, kind: "city"})) : []; }
   if(k === "wezla"){ const yc = data && data.ytCountries; return yc ? (yc.countries || []).filter(([cc]) => CC[cc]).map(([cc, v]) => ({name: regionName(cc), full: regionName(cc), v, lat: CC[cc][0], lon: CC[cc][1], cc, kind: "country"})) : []; }
   return [];
 }
-const DOT = {instagram: "#ff4f9a", musicig: "#b07cff", wezla: "#ffae2b"};
+const DOT = {instagram: "#ff4f9a", musicig: "#b07cff", spotify: "#1db954", wezla: "#ffae2b"};
 function worldList(){
   const el = $("wplaces"); if(!el || !data) return; const au = data.audience;
   if(!au || !(au.countries||[]).length){ el.innerHTML = `<div class="empty">Your audience map appears after the next stats refresh (Instagram shares it a few times a day).</div>`; return; }
@@ -1672,9 +1673,9 @@ async function globe(){
   gr.addColorStop(0,"rgba(255,255,255,1)"); gr.addColorStop(.25,"rgba(255,150,200,.9)"); gr.addColorStop(1,"rgba(255,80,160,0)"); gx.fillStyle = gr; gx.fillRect(0,0,64,64);
   const glowT = new THREE.CanvasTexture(gc);
   // audience towers
-  const ps0 = places(), psM = placesFor("musicig").map(p => ({...p, music: true})), ps = [...ps0, ...psM], mx = Math.max(1, ...ps.map(p => p.v)), markers = [];
+  const ps0 = places(), psM = placesFor("musicig").map(p => ({...p, music: true})), psS = placesFor("spotify").map(p => ({...p, spot: true})), ps = [...ps0, ...psM, ...psS], mx = Math.max(1, ...ps.map(p => p.v)), markers = [];
   ps.forEach((p, i) => {
-    const h = .02 + .3*Math.sqrt(p.v/mx), up = ll(p.lat, p.lon).normalize(), col = p.music ? new THREE.Color("#a970ff") : new THREE.Color().setHSL((330 + (1-p.v/mx)*50)/360 % 1, .95, .62);
+    const h = .02 + .3*Math.sqrt(p.v/mx), up = ll(p.lat, p.lon).normalize(), col = p.spot ? new THREE.Color("#1db954") : p.music ? new THREE.Color("#a970ff") : new THREE.Color().setHSL((330 + (1-p.v/mx)*50)/360 % 1, .95, .62);
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(.0035, .006, 1, 8, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: .85, blending: THREE.AdditiveBlending, depthWrite: false}));
     beam.position.copy(up.clone().multiplyScalar(1 + h/2)); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), up); beam.scale.y = .001;
     const tip = new THREE.Sprite(new THREE.SpriteMaterial({map: glowT, color: col, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true}));
@@ -1875,6 +1876,7 @@ function openMusic(){
     <div class="mstats">${["spotify","musicig","musicfb"].filter(k => data.accounts[k]).map(k => `<div style="--g:${G(k)}"><i>${ICON[k]}</i><b>${fmt(data.accounts[k].followers)}</b><small>${META[k].label} · ${META[k].sub}</small></div>`).join("")}
       ${sp.popularity != null ? `<div style="--g:var(--g-spotify)"><i>🔥</i><b>${sp.popularity}<small>/100</small></b><small>Spotify popularity</small></div>` : ""}</div>
     ${data.accounts.spotify ? `<div class="sec"><h2>Popularity vs your Reels</h2><small>pink = @wslyymusic Reels</small></div><div class="glass" style="padding:10px 12px">${popChart()}</div>` : `<div class="empty">Spotify appears here once its two secrets are added.</div>`}
+    ${s4aHTML()}
     ${rel.length ? `<div class="sec"><h2>Discography</h2><small>swipe · tap to relaunch</small></div><div class="wall" id="wall">${rel.map((r,i) => `<button class="wc" data-i="${i}"><img src="${esc(r.thumb||"")}" alt=""><b>${esc(r.title)}</b><small>${esc(r.kind)} · ${esc((r.ts||"").slice(0,4))}</small></button>`).join("")}</div>` : ""}
     ${posts.length ? `<div class="sec"><h2>Song heat</h2><small>Spotify popularity, live</small></div><div class="glass">${posts.slice(0,20).map(t => `<a class="heat" href="${esc(t.url)}" target="_blank" rel="noopener"><img src="${esc(t.thumb||"")}" alt=""><span><b>${esc(t.title)}</b><i class="meter"><em style="--p:${t.pop}%;--h:${Math.round(200 - t.pop*2)}"></em></i></span><strong style="color:hsl(${Math.round(200 - t.pop*2)},90%,62%)">${t.pop}</strong></a>`).join("")}</div>` : ""}`;
   m.classList.add("open"); m.scrollTop = 0; delete rollMem.mtot; roll($("mtot"), tot, full, "#1db954");
@@ -1882,6 +1884,19 @@ function openMusic(){
       wall.querySelectorAll(".wc").forEach(el => { const b = el.getBoundingClientRect(), d = clamp((b.left + b.width/2 - c)/r.width*2, -1.4, 1.4);
         el.style.transform = `perspective(700px) rotateY(${-d*48}deg) translateZ(${-Math.abs(d)*90}px) scale(${1 - Math.abs(d)*.08})`; el.style.zIndex = 100 - Math.round(Math.abs(d)*50); }); };
     wall.onscroll = place; place(); wall.querySelectorAll(".wc").forEach(el => el.onclick = () => launch(rel[+el.dataset.i])); }
+}
+function s4aHTML(){   // Spotify for Artists exports: streams, listeners, top songs, cities
+  const sa = data.s4a; if(!sa) return `<div class="sec"><h2>Streams</h2><small>from Spotify for Artists</small></div><div class="glass empty">Download your stats from Spotify for Artists into <b>Desktop › wslyy music › spotify</b>, then double-click <b>Import Spotify</b>.</div>`;
+  const tl = (sa.timeline || []).slice(-28), st = tl.reduce((a,r) => a + r[1], 0), li = tl.length ? tl[tl.length-1][2] : 0, songs = sa.songs || [], mx = Math.max(1, ...songs.map(x => x.streams));
+  let chart = "";
+  if(tl.length > 1){ const ys = tl.map(r => r[1]), y1 = Math.max(1, ...ys), W = 400, H = 120, d = tl.map((r,i) => (i?"L":"M") + (i/(tl.length-1)*W).toFixed(1) + "," + (H - r[1]/y1*H).toFixed(1)).join("");
+    chart = `<svg viewBox="0 0 ${W} ${H+14}" preserveAspectRatio="none" style="width:100%;height:140px"><path d="${d}L${W},${H}L0,${H}Z" fill="rgba(29,185,84,.2)"/><path d="${d}" fill="none" stroke="#1db954" stroke-width="2.2" vector-effect="non-scaling-stroke"/><text class="ax" x="0" y="${H+12}">${esc(tl[0][0])}</text><text class="ax" x="${W}" y="${H+12}" text-anchor="end">${esc(tl[tl.length-1][0])}</text></svg>`; }
+  return `<div class="sec"><h2>Streams</h2><small>Spotify for Artists · imported ${ago(sa.at)}</small></div>
+    <div class="mstats">${tl.length ? `<div style="--g:var(--g-spotify)"><i>▶</i><b>${fmt(st)}</b><small>streams · last ${tl.length} days</small></div><div style="--g:var(--g-spotify)"><i>🎧</i><b>${fmt(li)}</b><small>listeners · latest day</small></div>` : ""}
+      ${songs.length ? `<div style="--g:var(--g-spotify)"><i>♫</i><b>${fmt(songs.reduce((a,x) => a + x.streams, 0))}</b><small>streams · all songs</small></div>` : ""}</div>
+    ${chart ? `<div class="glass" style="padding:10px 12px;margin-top:10px">${chart}</div>` : ""}
+    ${songs.length ? `<div class="sec"><h2>Top songs</h2><small>by streams</small></div><div class="glass">${songs.slice(0,15).map((x,i) => `<div class="heat"><span style="width:22px;flex:none;color:var(--dim);font-weight:800">${i+1}</span><span><b>${esc(x.title)}</b><i class="meter"><em style="--p:${(x.streams/mx*100).toFixed(1)}%;--h:140"></em></i></span><strong style="color:#1db954;width:auto;font-size:15px">${fmt(x.streams)}</strong></div>`).join("")}</div>` : ""}
+    ${(sa.cities||[]).length ? `<div class="sec"><h2>Listener cities</h2><small>green on the globes</small></div><div class="glass">${sa.cities.slice(0,10).map(c => `<div class="place"><span class="nm">${esc(c[0])}</span><b>${fmt(c[1])}</b></div>`).join("")}</div>` : ""}`;
 }
 function popChart(){   // Spotify popularity over time, with @wslyymusic Reels marked and the popularity change 48h after each
   const s = spP(); if(s.length < 2) return `<div class="collect">Popularity history builds up from now — check back in a day</div>`;
