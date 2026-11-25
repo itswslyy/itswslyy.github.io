@@ -1905,6 +1905,7 @@ function openMusic(target){
   const m = $("music"), host = target || m.querySelector(".mbody"), sp = data.accounts.spotify || {}, posts = sp.posts || [], rel = (sp.releases || []).slice().sort((a,b) => (b.ts||"").localeCompare(a.ts||""));
   const tot = ["spotify","musicig","musicfb"].reduce((a,k) => a + ((data.accounts[k]||{}).followers || 0), 0);
   host.innerHTML = `
+    <button class="bigbtn" id="playconcert" style="--g:var(--g-spotify);margin:0 0 14px">▶ Concert view · from the stage</button>
     <div class="mhero">${sp.avatar ? `<img src="${esc(sp.avatar)}" alt="">` : ""}<div><small>Music · all platforms</small><b class="num" id="mtot"></b><span>followers</span></div></div>
     <div class="mstats">${["spotify","musicig","musicfb"].filter(k => data.accounts[k]).map(k => `<div style="--g:${G(k)}"><i>${ICON[k]}</i><b>${fmt(data.accounts[k].followers)}</b><small>${META[k].label} · ${META[k].sub}</small></div>`).join("")}
       ${sp.popularity != null ? `<div style="--g:var(--g-spotify)"><i>🔥</i><b>${sp.popularity}<small>/100</small></b><small>Spotify popularity</small></div>` : ""}</div>
@@ -1912,7 +1913,7 @@ function openMusic(target){
     ${s4aHTML()}
     ${rel.length ? `<div class="sec"><h2>Discography</h2><small>swipe · tap to relaunch</small></div><div class="wall" id="wall">${rel.map((r,i) => `<button class="wc" data-i="${i}"><img src="${esc(r.thumb||"")}" alt=""><b>${esc(r.title)}</b><small>${esc(r.kind)} · ${esc((r.ts||"").slice(0,4))}</small></button>`).join("")}</div>` : ""}
     ${posts.length ? `<div class="sec"><h2>Song heat</h2><small>Spotify popularity, live</small></div><div class="glass">${posts.slice(0,20).map(t => `<a class="heat" href="${esc(t.url)}" target="_blank" rel="noopener"><img src="${esc(t.thumb||"")}" alt=""><span><b>${esc(t.title)}</b><i class="meter"><em style="--p:${t.pop}%;--h:${Math.round(200 - t.pop*2)}"></em></i></span><strong style="color:hsl(${Math.round(200 - t.pop*2)},90%,62%)">${t.pop}</strong></a>`).join("")}</div>` : ""}`;
-  if(!target){ m.classList.add("open"); m.scrollTop = 0; } delete rollMem.mtot; roll($("mtot"), tot, full, "#1db954");
+  if(!target){ m.classList.add("open"); m.scrollTop = 0; } delete rollMem.mtot; host.querySelector("#playconcert").onclick = concert; roll($("mtot"), tot, full, "#1db954");
   const wall = $("wall"); if(wall){ const place = () => { const r = wall.getBoundingClientRect(), c = r.left + r.width/2;   // 3D cover flow
       wall.querySelectorAll(".wc").forEach(el => { const b = el.getBoundingClientRect(), d = clamp((b.left + b.width/2 - c)/r.width*2, -1.4, 1.4);
         el.style.transform = `perspective(700px) rotateY(${-d*48}deg) translateZ(${-Math.abs(d)*90}px) scale(${1 - Math.abs(d)*.08})`; el.style.zIndex = 100 - Math.round(Math.abs(d)*50); }); };
@@ -2063,6 +2064,70 @@ async function milestoneShot(k, m){
   return finished;
 }
 function biggestMilestone(){ const a = achieved()[0]; return a || null; }
+
+/* ================= Concert from the stage: one phone light per monthly listener, sections by country ================= */
+async function concert(){
+  const ov = $("tsq"), cv = ov.querySelector("canvas"), cap = ov.querySelector(".tcap"); ov.classList.add("open"); cap.classList.remove("on"); ov.querySelector(".tflash").style.opacity = 0;
+  let stop = false; ov.onclick = () => { stop = true; ov.classList.remove("open"); };
+  const sa = data.s4a || {}, tl = sa.timeline || [], last = tl[tl.length-1] || [], monthly = last[4] || (data.accounts.spotify || {}).monthly || 500;
+  const streams = tl.slice(-28).map(r => r[1]), avgS = streams.reduce((a,b) => a+b, 0) / Math.max(1, streams.length);
+  const ctry = (sa.countries || []).slice(0, 10), known = ctry.reduce((a,c) => a + c[1], 0), sections = [...ctry, ["Everywhere else", Math.max(0, monthly - known)]].filter(c => c[1] > 0);
+  cap.innerHTML = `<small>Live from the stage</small><b>${full(monthly)}</b><span>monthly listeners · ${fmt(streams.reduce((a,b)=>a+b,0))} streams in 28 days</span>`;
+  try{
+  const THREE = await getThree();
+  const [{EffectComposer}, {RenderPass}, {UnrealBloomPass}, {OutputPass}] = await Promise.all(["postprocessing/EffectComposer.js","postprocessing/RenderPass.js","postprocessing/UnrealBloomPass.js","postprocessing/OutputPass.js"]
+    .map(f => import("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" + f)));
+  const W = innerWidth, H = innerHeight, renderer = new THREE.WebGLRenderer({canvas: cv, antialias: true});
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)); renderer.setSize(W, H, false); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x030308); scene.fog = new THREE.FogExp2(0x0a0818, .012);
+  const cam = new THREE.PerspectiveCamera(58, W/H, .1, 800);
+  // stadium bowl: tiers rising away from the stage, crowd seated in country sections round the arc
+  const total = Math.min(6000, Math.max(200, monthly)), scale = monthly / total, pos = [], phase = [], sec = [];
+  let a0 = -1.25; const span = 2.5, perUnit = span / sections.reduce((a,c) => a + c[1], 0), labels = [];
+  sections.forEach((c, si) => { const a1 = a0 + c[1]*perUnit, cnt = Math.max(1, Math.round(c[1]/scale));
+    for(let i=0;i<cnt;i++){ const a = a0 + Math.random()*(a1 - a0), row = Math.random(), r = 26 + row*60, y = .6 + row*22 + (Math.random()-.5)*.6;
+      pos.push(Math.sin(a)*r, y, -Math.cos(a)*r); phase.push(Math.random()*6.28); sec.push(si); }
+    labels.push({name: CC[c[0]] ? regionName(c[0]) : c[0], v: c[1], a: (a0 + a1)/2}); a0 = a1 + .02; });
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("ph", new THREE.Float32BufferAttribute(phase, 1));
+  const crowdU = {t: {value: 0}, beat: {value: 0}, wave: {value: 0}, flash: {value: 0}, pr: {value: renderer.getPixelRatio()}};
+  const crowd = new THREE.Points(g, new THREE.ShaderMaterial({uniforms: crowdU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `attribute float ph;uniform float t,beat,wave,flash,pr;varying float vB;void main(){vec3 p=position;float ang=atan(p.x,-p.z);
+      float w=smoothstep(.25,0.,abs(mod(ang-wave+3.14159,6.28318)-3.14159));p.y+=w*1.4+sin(t*1.6+ph)*.12;p.x+=sin(t*.9+ph)*.18;
+      vB=.55+.25*sin(t*3.+ph)+beat*.35+w*.6+flash;vec4 mv=modelViewMatrix*vec4(p,1.);gl_PointSize=pr*(4.6+w*2.4)*(60./-mv.z);gl_Position=projectionMatrix*mv;}`,
+    fragmentShader: `varying float vB;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,.0,d);gl_FragColor=vec4(vec3(1.,.93,.82)*vB*a*1.6,a);}`}));
+  scene.add(crowd);
+  // tiers (dark concrete rings) so the crowd sits in a real bowl
+  for(let i=0;i<7;i++){ const r = 24 + i*10, ring = new THREE.Mesh(new THREE.CylinderGeometry(r+9, r, 3.2, 96, 1, true, -1.35 - Math.PI/2, 2.7), new THREE.MeshStandardMaterial({color: 0x101018, roughness: .9, side: THREE.DoubleSide}));
+    ring.position.y = i*3.2 - .8; ring.rotation.y = Math.PI; scene.add(ring); }
+  // section signs: floating glowing labels
+  labels.forEach(l => { const c = document.createElement("canvas"); c.width = 512; c.height = 128; const x = c.getContext("2d");
+    x.fillStyle = "rgba(10,12,22,.75)"; x.fillRect(0, 0, 512, 128); x.strokeStyle = "#1db954"; x.lineWidth = 4; x.strokeRect(2, 2, 508, 124);
+    x.fillStyle = "#fff"; x.font = "800 46px -apple-system,system-ui,sans-serif"; x.textAlign = "center"; x.fillText(l.name.length > 16 ? l.name.slice(0,15) + "…" : l.name, 256, 58);
+    x.fillStyle = "#7ef0a8"; x.font = "700 38px -apple-system,system-ui,sans-serif"; x.fillText(full(l.v) + " listeners", 256, 106);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: t, transparent: true}));
+    sp.position.set(Math.sin(l.a)*58, 30, -Math.cos(l.a)*58); sp.scale.set(12, 3, 1); scene.add(sp); });
+  // stage: glossy floor edge, truss with beam lights sweeping through haze
+  const stage = new THREE.Mesh(new THREE.BoxGeometry(30, 1.2, 14), new THREE.MeshStandardMaterial({color: 0x0c0c12, roughness: .2, metalness: .6})); stage.position.set(0, 1.4, 6); scene.add(stage);
+  const beamMat = c => new THREE.ShaderMaterial({uniforms: {c: {value: new THREE.Color(c)}, k: {value: 1}}, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    vertexShader: "varying float vy;void main(){vy=uv.y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+    fragmentShader: "uniform vec3 c;uniform float k;varying float vy;void main(){gl_FragColor=vec4(c*pow(vy,1.5)*.15*k,1.);}"});
+  const beams = [], cols = [0x1db954, 0xff4f9a, 0x8b5cf6, 0x22d3ee, 0xffae2b, 0x1db954];
+  cols.forEach((c, i) => { const geo = new THREE.ConeGeometry(4.5, 70, 32, 1, true); geo.translate(0, -35, 0); const m = beamMat(c), b = new THREE.Mesh(geo, m);
+    const hold = new THREE.Group(); hold.position.set(-12.5 + i*5, 15, 1); hold.add(b); scene.add(hold); beams.push({hold, m, s: i*1.3}); });
+  scene.add(new THREE.AmbientLight(0x30284a, .6));
+  const comp = new EffectComposer(renderer); comp.addPass(new RenderPass(scene, cam)); comp.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), .8, .6, .2)); comp.addPass(new OutputPass());
+  // camera: rises from the stage floor, then slowly pans across the crowd; streams drive the beat
+  const bpm = 92 + Math.min(40, avgS/50), t0 = performance.now(), ease = x => 1 - Math.pow(1 - x, 3);
+  const frame = now => { if(stop){ renderer.dispose(); return; } const t = (now - t0)/1000, e = ease(Math.min(1, t/4));
+    const beat = Math.pow(Math.max(0, Math.sin(t*bpm/60*Math.PI)), 8);
+    crowdU.t.value = t; crowdU.beat.value = beat; crowdU.wave.value = (t*.9) % 6.28 - 3.14; crowdU.flash.value = t > 3.4 && t < 4.2 ? (4.2 - t)*1.2 : 0;
+    beams.forEach((b, i) => { b.hold.rotation.x = 1.15 + Math.sin(t*.7 + b.s)*.3; b.hold.rotation.z = Math.sin(t*.5 + b.s*1.7)*.55; b.m.uniforms.k.value = .6 + beat*.8; });
+    cam.position.set(Math.sin(t*.12)*4, 2.2 + e*3.6, 9 - e*2); cam.lookAt(Math.sin(t*.18)*24, 9 + Math.sin(t*.1)*2, -60);
+    if(t > 4) cap.classList.add("on");
+    comp.render(); requestAnimationFrame(frame); };
+  requestAnimationFrame(frame);
+  }catch(e){ cap.classList.add("on"); }
+}
 
 /* ================= tabs, swipe, lock, boot ================= */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.tab));
